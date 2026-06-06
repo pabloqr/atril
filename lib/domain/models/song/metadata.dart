@@ -1,4 +1,28 @@
 import 'package:atril/domain/models/chord/chord.dart';
+import 'package:atril/domain/models/song/directive_type.dart';
+import 'package:atril/domain/models/song/line.dart';
+
+/// Precalculated lookup map from normalized directive name to [DirectiveType].
+final _directiveLookup = Map<String, DirectiveType>.unmodifiable({
+  for (final type in DirectiveType.values) type.name: type,
+});
+
+String? _stringValue(Object? value) => switch (value) {
+  null => null,
+  String() => value,
+  _ => value.toString(),
+};
+
+Chord? _chordValue(Object? value) => switch (value) {
+  Chord() => value,
+  _ => null,
+};
+
+int? _intValue(Object? value) => switch (value) {
+  int() => value,
+  String() => int.tryParse(value),
+  _ => null,
+};
 
 /// Descriptive information associated with a song.
 ///
@@ -6,16 +30,65 @@ import 'package:atril/domain/models/chord/chord.dart';
 /// understands directly, plus containers for repeated comments and unknown or
 /// format-specific fields.
 ///
-/// This class is deliberately passive: it does not parse directive names,
-/// validate musical values, derive missing values, or enforce formatting rules.
-/// The object represents metadata that has already been extracted by another
-/// layer.
+/// This class interprets known directive names and stores unrecognized entries
+/// in [misc]. Validation of musical values and source-specific alias handling
+/// belongs in the parser or editing layer.
 final class Metadata {
   /// Creates a metadata object.
   ///
-  /// All fields are optional. [comments] and [misc] default to empty constant
-  /// collections when omitted.
-  Metadata({this.title, this.artist, this.key, this.capo, this.comments = const [], this.misc = const {}});
+  /// Known directives are assigned to their dedicated fields using
+  /// [DirectiveType]. Repeated comments are preserved in order, and unknown
+  /// directives are collected in [misc].
+  factory Metadata({List<DirectiveLine> directives = const []}) {
+    String? title;
+    String? artist;
+    Chord? key;
+    int? capo;
+    final comments = <String>[];
+    final misc = <String, List<String>>{};
+
+    for (final directive in directives) {
+      final type = _directiveLookup[directive.name];
+      final value = directive.directive.value;
+
+      switch (type) {
+        case DirectiveType.title:
+          title ??= _stringValue(value);
+        case DirectiveType.artist:
+          artist ??= _stringValue(value);
+        case DirectiveType.key:
+          key ??= _chordValue(value);
+        case DirectiveType.capo:
+          capo ??= _intValue(value);
+        case DirectiveType.comment:
+          final comment = _stringValue(value);
+          if (comment != null) comments.add(comment);
+        case null:
+          final miscValue = _stringValue(value);
+          if (miscValue != null) {
+            misc.putIfAbsent(directive.name, () => <String>[]).add(miscValue);
+          }
+      }
+    }
+
+    return Metadata._(
+      title: title,
+      artist: artist,
+      key: key,
+      capo: capo,
+      comments: List.unmodifiable(comments),
+      misc: Map.unmodifiable(misc.map((k, v) => MapEntry(k, List<String>.unmodifiable(v)))),
+    );
+  }
+
+  const Metadata._({
+    required this.title,
+    required this.artist,
+    required this.key,
+    required this.capo,
+    required this.comments,
+    required this.misc,
+  });
 
   /// The song title, when known.
   final String? title;
@@ -40,17 +113,14 @@ final class Metadata {
 
   /// Free-form comments associated with the song.
   ///
-  /// Multiple comments are preserved in order. The list is stored as received;
-  /// callers that require immutability should pass an immutable list or avoid
-  /// mutating the original list after construction.
+  /// Multiple comments are preserved in order.
   final List<String> comments;
 
   /// Metadata entries that are not represented by the dedicated fields.
   ///
-  /// Keys are directive or source field names. Values are lists so repeated
+  /// Keys are normalized directive names. Values are lists so repeated
   /// fields can be preserved without overwriting earlier values.
   ///
-  /// The map and its value lists are stored as received; this class does not
-  /// create defensive copies.
+  /// The map and its value lists are immutable.
   final Map<String, List<String>> misc;
 }

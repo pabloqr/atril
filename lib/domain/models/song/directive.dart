@@ -15,7 +15,7 @@
 /// [String] value, while a richer parser could attach a typed object.
 final class Directive<T> {
   /// Creates a directive with a required [name] and an optional typed [value].
-  Directive({required this.name, this.value});
+  Directive({required String name, this.value}) : name = name.toLowerCase();
 
   /// The source-level identifier for this directive.
   ///

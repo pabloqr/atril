@@ -34,7 +34,7 @@ final class DirectiveLine<T> extends Line {
   /// This is a convenience for case-insensitive comparisons. It uses Dart's
   /// standard [String.toLowerCase] behavior and does not perform alias
   /// resolution, trimming, or locale-specific normalization.
-  String get normalizedName => directive.name.toLowerCase();
+  String get name => directive.name;
 }
 
 /// A line containing lyric text and zero or more chord anchors.

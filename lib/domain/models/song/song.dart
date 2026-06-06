@@ -18,7 +18,9 @@ final class Song {
   /// The provided list is copied into an unmodifiable list, so later mutations
   /// to the argument do not change [lines]. The [Line] objects themselves are
   /// not deep-copied.
-  Song({List<Line> lines = const []}) : metadata = Metadata(), lines = List.unmodifiable(lines);
+  Song({List<Line> lines = const []})
+    : metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList()),
+      lines = List.unmodifiable(lines);
 
   /// Metadata associated with the song.
   ///
