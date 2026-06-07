@@ -7,25 +7,25 @@ import 'package:atril/domain/models/song/metadata.dart';
 /// document body as an ordered list of [Line] objects and exposes a [Metadata]
 /// object for information that has been extracted or assigned separately.
 ///
-/// The current constructor does not derive [metadata] from [lines]. It creates
-/// an empty [Metadata] instance regardless of which directive lines are present.
-/// Until metadata extraction is implemented, code that needs populated metadata
-/// must supply or compute it outside this class.
+/// The constructor derives [metadata] from the directive lines currently present
+/// in [lines]. This keeps the aggregate convenient for read-only use after
+/// parsing, but it also means [metadata] is a snapshot: mutating nested objects
+/// inside existing line instances, if they are mutable, will not rebuild the
+/// metadata object.
 final class Song {
-  // TODO: Get metadata from lines
   /// Creates a song from an ordered sequence of logical [lines].
   ///
-  /// The provided list is copied into an unmodifiable list, so later mutations
-  /// to the argument do not change [lines]. The [Line] objects themselves are
-  /// not deep-copied.
+  /// Directive lines are inspected to build [metadata]. The provided list is
+  /// copied into an unmodifiable list, so later mutations to the argument do
+  /// not change [lines]. The [Line] objects themselves are not deep-copied.
   Song({List<Line> lines = const []})
     : metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList()),
       lines = List.unmodifiable(lines);
 
   /// Metadata associated with the song.
   ///
-  /// At the moment this is always initialized as empty metadata by the
-  /// constructor. It is not inferred from directive lines yet.
+  /// This is extracted from [DirectiveLine] entries in [lines] during
+  /// construction.
   final Metadata metadata;
 
   /// The song body as ordered logical lines.

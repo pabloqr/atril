@@ -39,6 +39,10 @@ final class Metadata {
   /// Known directives are assigned to their dedicated fields using
   /// [DirectiveType]. Repeated comments are preserved in order, and unknown
   /// directives are collected in [misc].
+  ///
+  /// When the same single-value directive appears more than once, the first
+  /// value that can be converted to the expected type wins. Later duplicate
+  /// values are ignored for dedicated fields.
   factory Metadata({List<DirectiveLine> directives = const []}) {
     String? title;
     String? artist;
