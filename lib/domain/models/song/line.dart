@@ -35,6 +35,9 @@ final class DirectiveLine<T> extends Line {
   /// standard [String.toLowerCase] behavior and does not perform alias
   /// resolution, trimming, or locale-specific normalization.
   String get name => directive.name;
+
+  /// The optional directive payload, forwarded from [directive].
+  T? get value => directive.value;
 }
 
 /// A line containing lyric text and zero or more chord anchors.
@@ -44,7 +47,7 @@ final class DirectiveLine<T> extends Line {
 /// in that text.
 final class LyricLine extends Line {
   /// Creates a lyric line with its [text] and positioned [chords].
-  LyricLine({required this.text, required this.chords});
+  LyricLine({required this.text, this.chords = const []});
 
   /// The lyric text for this line.
   ///

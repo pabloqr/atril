@@ -2,28 +2,6 @@ import 'package:atril/domain/models/chord/chord.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 import 'package:atril/domain/models/song/line.dart';
 
-/// Precalculated lookup map from normalized directive name to [DirectiveType].
-final _directiveLookup = Map<String, DirectiveType>.unmodifiable({
-  for (final type in DirectiveType.values) type.name: type,
-});
-
-String? _stringValue(Object? value) => switch (value) {
-  null => null,
-  String() => value,
-  _ => value.toString(),
-};
-
-Chord? _chordValue(Object? value) => switch (value) {
-  Chord() => value,
-  _ => null,
-};
-
-int? _intValue(Object? value) => switch (value) {
-  int() => value,
-  String() => int.tryParse(value),
-  _ => null,
-};
-
 /// Descriptive information associated with a song.
 ///
 /// [Metadata] stores the normalized metadata fields that the domain currently
@@ -52,7 +30,7 @@ final class Metadata {
     final misc = <String, List<String>>{};
 
     for (final directive in directives) {
-      final type = _directiveLookup[directive.name];
+      final type = DirectiveType.lookup[directive.name];
       final value = directive.directive.value;
 
       switch (type) {
@@ -67,6 +45,7 @@ final class Metadata {
         case DirectiveType.comment:
           final comment = _stringValue(value);
           if (comment != null) comments.add(comment);
+        case DirectiveType.unknown:
         case null:
           final miscValue = _stringValue(value);
           if (miscValue != null) {
@@ -127,4 +106,21 @@ final class Metadata {
   ///
   /// The map and its value lists are immutable.
   final Map<String, List<String>> misc;
+
+  static String? _stringValue(Object? value) => switch (value) {
+    null => null,
+    String() => value,
+    _ => value.toString(),
+  };
+
+  static Chord? _chordValue(Object? value) => switch (value) {
+    Chord() => value,
+    _ => null,
+  };
+
+  static int? _intValue(Object? value) => switch (value) {
+    int() => value,
+    String() => int.tryParse(value),
+    _ => null,
+  };
 }

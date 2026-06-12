@@ -1,5 +1,6 @@
 import 'package:atril/domain/models/song/line.dart';
 import 'package:atril/domain/models/song/metadata.dart';
+import 'package:atril/domain/models/song/parse_issue.dart';
 
 /// A complete song represented as ordered logical lines plus extracted metadata.
 ///
@@ -13,14 +14,15 @@ import 'package:atril/domain/models/song/metadata.dart';
 /// inside existing line instances, if they are mutable, will not rebuild the
 /// metadata object.
 final class Song {
-  /// Creates a song from an ordered sequence of logical [lines].
+  /// Creates a song from ordered logical [lines] and parser [issues].
   ///
   /// Directive lines are inspected to build [metadata]. The provided list is
   /// copied into an unmodifiable list, so later mutations to the argument do
   /// not change [lines]. The [Line] objects themselves are not deep-copied.
-  Song({List<Line> lines = const []})
+  Song({List<Line> lines = const [], List<ParseIssue> issues = const []})
     : metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList()),
-      lines = List.unmodifiable(lines);
+      lines = List.unmodifiable(lines),
+      issues = List.unmodifiable(issues);
 
   /// Metadata associated with the song.
   ///
@@ -33,4 +35,10 @@ final class Song {
   /// The list is unmodifiable and preserves the order supplied to the
   /// constructor.
   final List<Line> lines;
+
+  /// Diagnostics associated with the source used to construct this song.
+  ///
+  /// The list is unmodifiable. Recoverable errors may coexist with parsed
+  /// [lines], allowing consumers to show a partial preview.
+  final List<ParseIssue> issues;
 }
