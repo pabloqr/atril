@@ -1,6 +1,5 @@
 import 'package:atril/data/services/chord/chord_codec.dart';
-import 'package:atril/domain/models/chord/chord.dart';
-import 'package:atril/domain/models/chord/note.dart';
+import 'package:atril/domain/models/chord.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

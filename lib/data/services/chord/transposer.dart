@@ -1,11 +1,5 @@
-import 'package:atril/domain/models/chord/accidental.dart';
-import 'package:atril/domain/models/chord/chord.dart';
-import 'package:atril/domain/models/chord/interval.dart';
-import 'package:atril/domain/models/chord/note.dart';
-import 'package:atril/domain/models/chord/note_letter.dart';
-import 'package:atril/domain/models/chord/transpose_direction.dart';
+import 'package:atril/domain/models/chord.dart';
 import 'package:atril/domain/models/song.dart';
-import 'package:atril/domain/models/song/chord_anchor.dart';
 
 /// Transposes notes, chords, and parsed songs by spelled musical intervals.
 ///

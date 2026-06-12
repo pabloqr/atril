@@ -1,8 +1,7 @@
 import 'dart:convert';
 
 import 'package:atril/core/utils/patterns.dart';
-import 'package:atril/domain/models/chord/chord.dart';
-import 'package:atril/domain/models/chord/note.dart';
+import 'package:atril/domain/models/chord.dart';
 
 /// The shared codec for Atril's supported chord notation.
 const chordCodec = ChordCodec();

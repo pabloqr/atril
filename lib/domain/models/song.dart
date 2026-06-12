@@ -6,8 +6,11 @@
 /// metadata.
 library;
 
+export 'song/chord_anchor.dart';
 export 'song/directive.dart';
 export 'song/directive_type.dart';
 export 'song/line.dart';
 export 'song/metadata.dart';
+export 'song/parse_issue.dart';
 export 'song/song.dart';
+export 'song/source_location.dart';

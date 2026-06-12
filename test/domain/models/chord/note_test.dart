@@ -1,6 +1,4 @@
-import 'package:atril/domain/models/chord/accidental.dart';
-import 'package:atril/domain/models/chord/note.dart';
-import 'package:atril/domain/models/chord/note_letter.dart';
+import 'package:atril/domain/models/chord.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

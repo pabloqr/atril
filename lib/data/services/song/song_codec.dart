@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'package:atril/core/utils/patterns.dart';
 import 'package:atril/data/services/chord/chord_codec.dart';
 import 'package:atril/domain/models/song.dart';
-import 'package:atril/domain/models/song/chord_anchor.dart';
-import 'package:atril/domain/models/song/parse_issue.dart';
-import 'package:atril/domain/models/song/source_location.dart';
 
 /// A [SongCodec] instance for encoding and decoding ChordPro documents.
 ///
