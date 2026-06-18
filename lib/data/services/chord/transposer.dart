@@ -1,3 +1,4 @@
+import 'package:atril/core/utils/exceptions.dart';
 import 'package:atril/domain/models/chord.dart';
 import 'package:atril/domain/models/song.dart';
 
@@ -9,8 +10,8 @@ import 'package:atril/domain/models/song.dart';
 /// an augmented unison from C produce C# rather than Db.
 ///
 /// Atril currently supports only single flats and sharps. [transposeNote]
-/// throws [ArgumentError] if a requested spelling would require a double
-/// accidental.
+/// throws [TranspositionException] if a requested spelling would require a
+/// double accidental.
 final class Transposer {
   /// Creates a stateless transposer.
   const Transposer();
@@ -50,8 +51,8 @@ final class Transposer {
   ///
   /// First the destination letter is chosen diatonically. The chromatic target
   /// is then calculated and the accidental needed to reconcile the two is
-  /// selected. Throws [ArgumentError] when that accidental is outside the
-  /// supported flat-natural-sharp range.
+  /// selected. Throws [TranspositionException] when that accidental is outside
+  /// the supported flat-natural-sharp range.
   Note transposeNote(Note note, Interval interval, TransposeDirection direction) {
     final steps = interval.diatonicSteps;
     final semitoneShift = interval.semitones * direction.sign;
@@ -70,9 +71,8 @@ final class Transposer {
       0 => Accidental.natural,
       1 => Accidental.sharp,
       11 => Accidental.flat,
-      _ => throw ArgumentError(
-        'Transposing $note by $interval $direction requires an accidental '
-        'outside the supported range (offset: $accidentalOffset).',
+      _ => throw TranspositionException(
+        'Transposing $note by $interval $direction requires an accidental outside the supported range (offset: $accidentalOffset).',
       ),
     };
 
