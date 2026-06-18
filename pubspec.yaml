@@ -1,7 +1,7 @@
 name: atril
 description: "A song chord sheet editor and viewer."
 publish_to: 'none'
-version: 0.1.0+1
+version: 0.1.0
 
 environment:
   sdk: ^3.12.0
