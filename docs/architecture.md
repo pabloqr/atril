@@ -1,6 +1,8 @@
 # Atril architecture
 
-This page explains the boundaries and data flow of Atril's pure Dart song-processing core. UI, persistence, and platform integration build on these components but should not duplicate their parsing or music rules.
+This page explains the boundaries and data flow of Atril's Dart application
+core. UI, persistence, and platform integration build on these components but
+should not duplicate their parsing, storage, or music rules.
 
 ## Main boundaries
 
@@ -37,7 +39,73 @@ Each operation receives and returns a `SourceFragment`, which combines the compl
 3. The difference determines the accidental.
 4. Song transposition rebuilds lyric-line chord anchors while preserving lyric text and offsets.
 
-Only natural notes, single flats, and single sharps are supported. A requested spelling that needs a double accidental throws `ArgumentError`; callers must choose a supported interval or surface that limitation.
+Only natural notes, single flats, and single sharps are supported. A requested spelling that needs a double accidental throws `TranspositionException`; callers must choose a supported interval or surface that limitation.
+
+### Result and command flow
+
+`lib/core/utils/result.dart` defines the explicit operation result used by
+repositories and platform services:
+
+- `Ok<T>` carries the operation value.
+- `Error<T>` carries an `Exception` that the caller can display, map, retry, or
+  rethrow.
+
+This keeps expected user-facing failures, such as invalid names or missing
+files, out of exception-driven UI control flow. Lower-level services may still
+throw; repository methods catch those exceptions and return `Result.error`.
+
+`Command` wraps asynchronous view-model actions. It exposes running,
+completion, error, and latest-result state through `ChangeNotifier`, and it
+ignores re-entrant executions while the previous execution is still running.
+The action itself remains responsible for returning `Result`.
+
+`ResultUtils.unwrapOrThrow` exists only as an adapter for call sites that still
+need exception semantics. New repository consumers should usually switch on
+`Ok` and `Error` directly.
+
+### Persistence
+
+`lib/domain/models/persistence/SongFile` represents a source-level document:
+
+- `name` is the storage identifier used by repositories, separate from the
+  ChordPro `{title}` directive.
+- `source` is the complete ChordPro text.
+
+`PersistenceService` is the low-level filesystem boundary. Its local
+implementation resolves paths relative to a platform base directory and returns
+`dart:io` handles. It does not parse ChordPro, validate user-facing names, or
+decide which extensions belong to the song library.
+
+`SongRepository` is the local library boundary. It:
+
+1. Lists files from `Constants.songDirPath`.
+2. Keeps only files whose extensions appear in
+   `Constants.allowedFileExtensions`.
+3. Sorts them by path for stable presentation.
+4. Reads each file and converts it to `SongFile`, stripping the storage
+   extension from the logical name.
+5. Returns failures as `Result.error`.
+
+Saving and deleting validate the logical name with the repository's safe-name
+pattern. Only ASCII letters, digits, underscores, and hyphens are accepted.
+Saved songs use the canonical extension from `Constants.songFileExtension`.
+
+### External files
+
+`FilePickerService` is the platform boundary for user-selected files outside
+Atril's managed library. `ExternalFileRepository` wraps that service so the rest
+of the app can work with `Result<SongFile?>` instead of plugin types.
+
+Import returns:
+
+- `Ok(SongFile)` when a UTF-8 file is selected and decoded.
+- `Ok(null)` when the user cancels the picker.
+- `Error` when selection or decoding fails.
+
+Export is currently a contract only: `FilePickerService.saveFile` and
+`ExternalFileRepository.exportFile` are not implemented yet. Code and
+documentation must not present external export as complete until those methods
+write a selected file and return `Result`.
 
 ### Capo intervals
 
@@ -81,10 +149,16 @@ Parser diagnostics are not serialized because they describe source defects rathe
 The intended dependency direction is:
 
 ```text
-UI / persistence
+UI / view models
       |
       v
-data services (codecs, source editing, transposition)
+commands
+      |
+      v
+repositories
+      |
+      v
+data services (codecs, source editing, transposition, persistence adapters)
       |
       v
 domain models
@@ -93,4 +167,7 @@ domain models
 core syntax helpers
 ```
 
-Domain models must remain independent of Flutter and data-service implementations. Data services may coordinate models and shared syntax helpers but should not depend on widgets or storage.
+Domain models must remain independent of Flutter and data-service
+implementations. Data services may coordinate models, shared syntax helpers, and
+platform adapters but should not depend on widgets. Repositories translate
+service-level behavior into application-level `Result` contracts.

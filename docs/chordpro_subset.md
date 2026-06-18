@@ -8,6 +8,8 @@ This page is the reference for the ChordPro syntax currently recognized by Atril
 - Parsing normalizes all line endings into logical lines.
 - Encoding always joins logical lines with LF.
 - Blank or whitespace-only source lines become explicit `EmptyLine` values.
+- Local library and import flows currently accept files with `cho`, `crd`,
+  `chopro`, `chord`, or `pro` extensions.
 
 ## Directives
 
@@ -95,3 +97,14 @@ Encoding a `Song` is normalized rather than source-preserving:
 - `Song.issues` are omitted.
 
 Use `SourceEditor` for toolbar actions that must preserve unrelated source formatting. Use `songCodec.encode` when canonical output from the parsed model is intended.
+
+## Storage boundaries
+
+The ChordPro parser does not know whether source text came from the local
+library, an imported external file, or an in-memory editor draft. Persistence
+code stores complete source strings and leaves ChordPro validation to the codec
+and UI flow.
+
+Atril's local repository writes songs with the canonical `.cho` extension.
+Other accepted ChordPro-compatible extensions are read/imported but are not the
+canonical extension for newly saved local songs.
