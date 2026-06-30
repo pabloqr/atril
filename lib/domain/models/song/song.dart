@@ -23,9 +23,9 @@ final class Song {
   /// copied into an unmodifiable list, so later mutations to the argument do
   /// not change [lines]. The [Line] objects themselves are not deep-copied.
   Song({List<Line> lines = const [], List<ParseIssue> issues = const []})
-    : metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList()),
-      lines = List.unmodifiable(lines),
-      issues = List.unmodifiable(issues);
+    : lines = List.unmodifiable(lines),
+      issues = List.unmodifiable(issues),
+      metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList());
 
   /// Metadata associated with the song.
   ///
