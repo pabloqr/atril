@@ -23,4 +23,7 @@ final class ChordAnchor {
   /// lyric text length, is possible unless rejected by the code that constructs
   /// the anchor.
   final int offset;
+
+  @override
+  String toString() => 'ChordAnchor(chord: $chord, offset: $offset)';
 }
