@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.1](https://github.com/pabloqr/atril/compare/v0.2.0...v0.2.1) (2026-06-30)
+
+
+### Refactors
+
+* rename song file name field to filename ([7a48fb7](https://github.com/pabloqr/atril/commit/7a48fb7e2fe3ad6ea5777dc55145d8f82e4fb829))
+
+
+### Tests
+
+* add coverage for song library behavior ([be0c714](https://github.com/pabloqr/atril/commit/be0c71423bd682021f7e3f47d75a402f392c9b22))
+
 ## [0.2.0](https://github.com/pabloqr/atril/compare/v0.1.0...v0.2.0) (2026-06-18)
 
 
