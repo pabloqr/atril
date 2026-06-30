@@ -1,3 +1,4 @@
+import 'package:atril/data/services/chord/chord_codec.dart';
 import 'package:atril/domain/models/chord/chord.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 import 'package:atril/domain/models/song/line.dart';
@@ -115,6 +116,7 @@ final class Metadata {
 
   static Chord? _chordValue(Object? value) => switch (value) {
     Chord() => value,
+    String() => chordCodec.decode(value),
     _ => null,
   };
 

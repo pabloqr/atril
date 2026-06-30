@@ -36,7 +36,7 @@ final class FilePickerServiceImpl implements FilePickerService {
           throw StateError('The selected document could not be read.');
         }
 
-        return Result.ok(SongFile(name: file.name, source: utf8.decode(bytes, allowMalformed: false)));
+        return Result.ok(SongFile(filename: file.name, source: utf8.decode(bytes, allowMalformed: false)));
       } on Exception catch (e) {
         return Result.error(e);
       }

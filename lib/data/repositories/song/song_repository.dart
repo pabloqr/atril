@@ -20,8 +20,8 @@ abstract final class SongRepository {
   /// extension.
   Future<Result<SongFile>> saveSong(SongFile song);
 
-  /// Deletes the canonical file for [name].
-  Future<Result<void>> deleteSong(String name);
+  /// Deletes the canonical file for [filename].
+  Future<Result<void>> deleteSong(String filename);
 }
 
 /// File-backed [SongRepository] using a [PersistenceService].
@@ -61,13 +61,13 @@ final class SongRepositoryImpl implements SongRepository {
   @override
   Future<Result<SongFile>> saveSong(SongFile song) async {
     try {
-      if (!_isValidName(song.name)) {
+      if (!_isValidName(song.filename)) {
         return Result.error(ValidationException('Only letters, digits, underscores and hyphens are allowed.'));
       }
 
       await _service.createDirectory(songDirPath);
 
-      final file = await _service.writeFile(_songPath(_addExtension(song.name)), song.source);
+      final file = await _service.writeFile(_songPath(_addExtension(song.filename)), song.source);
       return Result.ok(_getSongFileFromFile(file));
     } on Exception catch (e) {
       return Result.error(e);
@@ -75,22 +75,22 @@ final class SongRepositoryImpl implements SongRepository {
   }
 
   @override
-  Future<Result<void>> deleteSong(String name) async {
+  Future<Result<void>> deleteSong(String filename) async {
     try {
-      if (!_isValidName(name)) {
+      if (!_isValidName(filename)) {
         return Result.error(ValidationException('Only letters, digits, underscores and hyphens are allowed.'));
       }
 
-      await _service.deleteFile(_songPath(_addExtension(name)));
+      await _service.deleteFile(_songPath(_addExtension(filename)));
       return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(e);
     }
   }
 
-  bool _isValidName(String name) => _safeNamePattern.hasMatch(name);
+  bool _isValidName(String filename) => _safeNamePattern.hasMatch(filename);
 
-  String _addExtension(String name) => '$name.${Constants.songFileExtension}';
+  String _addExtension(String filename) => '$filename.${Constants.songFileExtension}';
 
   String _songPath(String path) => '$songDirPath${Platform.pathSeparator}$path';
 
@@ -100,9 +100,9 @@ final class SongRepositoryImpl implements SongRepository {
   /// logical names. File content is read here because [PersistenceService]
   /// deliberately exposes low-level filesystem handles.
   SongFile _getSongFileFromFile(File file) {
-    final name = path.basenameWithoutExtension(file.path);
+    final filename = path.basenameWithoutExtension(file.path);
     final source = file.readAsStringSync();
 
-    return SongFile(name: name, source: source);
+    return SongFile(filename: filename, source: source);
   }
 }

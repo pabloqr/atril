@@ -17,4 +17,7 @@ final class Chord {
 
   /// The optional slash-chord bass note.
   final Note? bass;
+
+  @override
+  String toString() => '$root${extension ?? ''}${bass == null ? '' : '/$bass'}';
 }
