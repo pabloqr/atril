@@ -26,6 +26,10 @@ abstract final class AtrilTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      progressIndicatorTheme: ProgressIndicatorThemeData(
+        // ignore: deprecated_member_use
+        year2023: true,
+      ),
       cardTheme: CardThemeData(
         color: colorScheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28.0)),

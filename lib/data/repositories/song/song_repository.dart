@@ -13,8 +13,12 @@ import 'package:path/path.dart' as path;
 /// parsing, validation of ChordPro content, and metadata extraction belong to
 /// the song codec and UI flow.
 abstract final class SongRepository {
+  Future<Result<bool>> existsSong(String filename);
+
   /// Reads every supported song file from the configured library directory.
   Future<Result<List<SongFile>>> getSongs();
+
+  Future<Result<SongFile?>> getSong(String filename);
 
   /// Validates the storage name and writes the song using Atril's canonical
   /// extension.
@@ -35,6 +39,20 @@ final class SongRepositoryImpl implements SongRepository {
   final String songDirPath;
 
   @override
+  Future<Result<bool>> existsSong(String filename) async {
+    try {
+      if (!_isValidName(filename)) {
+        return Result.error(ValidationException('Only letters, digits, underscores and hyphens are allowed.'));
+      }
+
+      final exists = await _service.existsFile(_songPath(_addExtension(filename)));
+      return Result.ok(exists);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
   Future<Result<List<SongFile>>> getSongs() async {
     try {
       final entities = await _service.listDirectory(songDirPath);
@@ -53,6 +71,22 @@ final class SongRepositoryImpl implements SongRepository {
       );
 
       return Result.ok(songFiles);
+    } on Exception catch (e) {
+      return Result.error(e);
+    }
+  }
+
+  @override
+  Future<Result<SongFile?>> getSong(String filename) async {
+    try {
+      if (!_isValidName(filename)) {
+        return Result.error(ValidationException('Only letters, digits, underscores and hyphens are allowed.'));
+      }
+
+      final file = await _service.readFile(_songPath(_addExtension(filename)));
+      return Result.ok(_getSongFileFromFile(file));
+    } on FileSystemException {
+      return Result.ok(null);
     } on Exception catch (e) {
       return Result.error(e);
     }
