@@ -137,8 +137,8 @@ final class SongListViewModel extends ChangeNotifier {
     return songsResult;
   }
 
-  Future<Result> _saveSong(String name, String source) async {
-    final createResult = await _songRepository.saveSong(SongFile(filename: name, source: source));
+  Future<Result> _saveSong(String filename, String source) async {
+    final createResult = await _songRepository.saveSong(SongFile(filename: filename, source: source));
     switch (createResult) {
       case Ok<SongFile>():
         _songs.add(createResult.value);
@@ -170,11 +170,11 @@ final class SongListViewModel extends ChangeNotifier {
     return deleteResult;
   }
 
-  Future<Result> _deleteSong(String name) async {
-    final deleteResult = await _songRepository.deleteSong(name);
+  Future<Result> _deleteSong(String filename) async {
+    final deleteResult = await _songRepository.deleteSong(filename);
     switch (deleteResult) {
       case Ok<void>():
-        _songs.removeWhere((song) => song.filename == name);
+        _songs.removeWhere((song) => song.filename == filename);
         notifyListeners();
       case Error<void>():
     }
