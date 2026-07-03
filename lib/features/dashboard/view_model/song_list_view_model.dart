@@ -56,10 +56,10 @@ final class SongListViewModel extends ChangeNotifier {
 
   final SongRepository _songRepository;
 
-  late Command0<void> load;
-  late Command2<void, String, String> saveSong;
-  late Command3<void, String, String, String> renameSongFilename;
-  late Command1<void, String> deleteSong;
+  late final Command0<void> load;
+  late final Command2<void, String, String> saveSong;
+  late final Command3<void, String, String, String> renameSongFilename;
+  late final Command1<void, String> deleteSong;
 
   List<SongFile> _songs = [];
 

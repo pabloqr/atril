@@ -11,7 +11,7 @@ final class LoadingViewModel extends ChangeNotifier {
   final SongRepository _songRepository;
   final String filename;
 
-  late Command0<void> load;
+  late final Command0<void> load;
 
   bool isLoading = true;
   bool exists = false;
