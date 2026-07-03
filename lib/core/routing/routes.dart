@@ -29,6 +29,7 @@ abstract final class AppRoutes {
   // static const _exploreRelative = '/explore';
   // static const _profileRelative = '/profile';
   static const _settingsRelative = '/settings';
+  static const _workspaceRelative = '/workspace';
 
   // static final welcomeRoute = '/welcome';
 
@@ -40,6 +41,9 @@ abstract final class AppRoutes {
   static final homeRoute = AppRoute(name: 'home', path: _homeRelative);
   // static final profileRoute = _profileRelative;
   static final settingsRoute = AppRoute(name: 'settings', path: _settingsRelative);
+
+  static final workspaceEditorRoute = AppRoute(name: 'workspace-editor', path: '$_workspaceRelative/editor');
+  static final workspacePreviewRoute = AppRoute(name: 'workspace-preview', path: '$_workspaceRelative/preview');
 
   static final songItemRoute = AppRoute(name: 'song', path: '$_songsRelative/:filename');
 
