@@ -17,6 +17,13 @@ final class LoadingViewModel extends ChangeNotifier {
   bool exists = false;
   bool hasError = false;
 
+  @override
+  void dispose() {
+    load.dispose();
+
+    super.dispose();
+  }
+
   Future<Result> _load() async {
     final result = await _songRepository.existsSong(filename);
 

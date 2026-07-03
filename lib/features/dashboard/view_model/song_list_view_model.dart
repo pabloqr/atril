@@ -110,6 +110,16 @@ final class SongListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
+  void dispose() {
+    load.dispose();
+    saveSong.dispose();
+    renameSongFilename.dispose();
+    deleteSong.dispose();
+
+    super.dispose();
+  }
+
   Future<Result> _load() async {
     final songsResult = await _songRepository.getSongs();
     switch (songsResult) {
