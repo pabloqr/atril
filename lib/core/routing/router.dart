@@ -4,6 +4,7 @@ import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/dashboard/widgets/song_list_screen.dart';
 import 'package:atril/features/loading/view_model/loading_view_model.dart';
 import 'package:atril/features/loading/widgets/loading_screen.dart';
+import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/workspace_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -55,7 +56,10 @@ GoRouter router() => GoRouter(
       ),
       routes: [
         StatefulShellRoute.indexedStack(
-          builder: (context, state, navigationShell) => WorkspaceScaffold(navigationShell: navigationShell),
+          builder: (context, state, navigationShell) => WorkspaceScaffold(
+            navigationShell: navigationShell,
+            viewModel: WorkspaceViewModel(songRepository: context.read(), filename: state.pathParameters['filename']!),
+          ),
           branches: [
             StatefulShellBranch(
               routes: [
