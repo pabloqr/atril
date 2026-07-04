@@ -16,12 +16,7 @@ final class LoadingViewModel extends ChangeNotifier {
 
   late final Command0<void> load;
 
-  bool _isLoading = true;
   bool _exists = false;
-  bool _hasError = false;
-
-  bool get isLoading => _isLoading;
-  bool get hasError => _hasError;
 
   bool get exists => _exists;
 
@@ -42,7 +37,6 @@ final class LoadingViewModel extends ChangeNotifier {
         _log.fine('Success checking if song \'$filename\' exists');
 
         _exists = value;
-        _hasError = false;
 
         _log.info('Song \'$filename\' does ${_exists ? '' : 'not'} exist');
 
@@ -50,10 +44,8 @@ final class LoadingViewModel extends ChangeNotifier {
         _log.severe('Error while checking if song \'$filename\' exists', result.error);
 
         _exists = false;
-        _hasError = true;
     }
 
-    _isLoading = false;
     notifyListeners();
 
     return Result.ok(result);

@@ -22,11 +22,7 @@ class LoadingScreen extends StatelessWidget {
         }
 
         if (viewModel.load.completed) {
-          if (viewModel.hasError) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.go('${AppRoutes.notFoundRoute.path}?reason=error');
-            });
-          } else if (!viewModel.exists) {
+          if (!viewModel.exists) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               context.go('${AppRoutes.notFoundRoute.path}?reason=not-found');
             });
