@@ -1,4 +1,5 @@
 import 'package:atril/domain/models/song.dart';
+import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -50,10 +51,7 @@ class _SongListTileState extends State<SongListTile> {
               Container(
                 width: 48.0,
                 height: 48.0,
-                decoration: BoxDecoration(
-                  color: colorScheme.secondaryContainer,
-                  shape: BoxShape.circle,
-                ),
+                decoration: BoxDecoration(color: colorScheme.secondaryContainer, shape: BoxShape.circle),
                 child: Icon(Icons.music_note_rounded, color: colorScheme.onSecondaryContainer),
               ),
               Expanded(
@@ -89,7 +87,7 @@ class _SongListTileState extends State<SongListTile> {
                         onPressed: () async {
                           _titleController.text = widget.song.metadata.title ?? '';
 
-                          await _showDialog(
+                          await showCustomDialog<void>(
                             context,
                             title: const Text('Rename song'),
                             content: Column(
@@ -122,7 +120,7 @@ class _SongListTileState extends State<SongListTile> {
                         onPressed: () async {
                           _filenameController.text = widget.filename;
 
-                          await _showDialog(
+                          await showCustomDialog<void>(
                             context,
                             title: const Text('Rename song'),
                             content: Column(
@@ -163,7 +161,7 @@ class _SongListTileState extends State<SongListTile> {
                           iconColor: WidgetStatePropertyAll(colorScheme.onErrorContainer),
                         ),
                         onPressed: () async {
-                          await _showDialog(
+                          await showCustomDialog<void>(
                             context,
                             title: const Text('Delete song?'),
                             content: const Text(
@@ -208,28 +206,6 @@ class _SongListTileState extends State<SongListTile> {
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  Future<void> _showDialog(
-    BuildContext context, {
-    required Widget title,
-    required Widget content,
-    required List<Widget> actions,
-  }) async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    await showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        constraints: const BoxConstraints(minWidth: 280.0, maxWidth: 560.0),
-        titleTextStyle: textTheme.headlineSmall?.copyWith(color: colorScheme.onSurface),
-        contentTextStyle: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
-        title: title,
-        content: SizedBox(width: double.maxFinite, child: content),
-        actions: actions,
       ),
     );
   }
