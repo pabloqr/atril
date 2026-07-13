@@ -125,16 +125,21 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
       ),
       child: IconButtonTheme(
         data: IconButtonThemeData(style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded)),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: _kItemSpacing,
-          children: [
-            ...widget.children,
-            if (widget.collapsibleItems.isNotEmpty)
-              RepaintBoundary(
-                child: AnimatedBuilder(animation: _controller, builder: (context, _) => _buildCollapsibleGroup()),
-              ),
-          ],
+        child: AnimatedSize(
+          duration: _kAnimationDuration,
+          curve: _kAnimationCurve,
+          alignment: Alignment.centerLeft,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: _kItemSpacing,
+            children: [
+              ...widget.children,
+              if (widget.collapsibleItems.isNotEmpty)
+                RepaintBoundary(
+                  child: AnimatedBuilder(animation: _controller, builder: (context, _) => _buildCollapsibleGroup()),
+                ),
+            ],
+          ),
         ),
       ),
     );
