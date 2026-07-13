@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 const _kItemSpacing = 4.0;
 
+const _kAnimationDuration = Duration(milliseconds: 300);
+const _kAnimationCurve = Curves.easeInOutCubicEmphasized;
+
 final class BottomToolbarCollapsibleItem {
   BottomToolbarCollapsibleItem({required this.icon, required this.label, required this.onPressed});
 
@@ -33,10 +36,25 @@ class BottomToolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       mainAxisSize: MainAxisSize.min,
-      spacing: 8.0,
       children: [
         _BottomToolbar(collapsibleItems: collapsibleItems, children: children),
-        if (showFab) FloatingActionButton(onPressed: onFabTap, child: fabChild),
+        if (fabChild != null)
+          TweenAnimationBuilder<double>(
+            tween: Tween(end: showFab ? 1.0 : 0.0),
+            duration: _kAnimationDuration,
+            curve: _kAnimationCurve,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: FloatingActionButton(onPressed: onFabTap, child: fabChild),
+            ),
+            builder: (context, visibility, child) => IgnorePointer(
+              ignoring: !showFab,
+              child: ExcludeSemantics(
+                excluding: !showFab,
+                child: _CollapsingChild(visibility: visibility, child: child!),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -53,8 +71,6 @@ class _BottomToolbar extends StatefulWidget {
 }
 
 class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProviderStateMixin {
-  static const _duration = Duration(milliseconds: 300);
-  static const _curve = Curves.easeInOutCubicEmphasized;
   static const _collapseThreshold = 600.0;
 
   late final AnimationController _controller;
@@ -66,8 +82,8 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: _duration);
-    _collapseAnimation = CurvedAnimation(parent: _controller, curve: _curve);
+    _controller = AnimationController(vsync: this, duration: _kAnimationDuration);
+    _collapseAnimation = CurvedAnimation(parent: _controller, curve: _kAnimationCurve);
   }
 
   @override
@@ -183,7 +199,7 @@ class _CollapsingChild extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: visibility,
-      child: Align(alignment: Alignment.centerLeft, widthFactor: visibility, child: child),
+      child: Align(alignment: Alignment.centerLeft, widthFactor: visibility, heightFactor: 1.0, child: child),
     );
   }
 }
