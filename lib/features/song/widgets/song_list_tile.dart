@@ -2,6 +2,7 @@ import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class SongListTile extends StatefulWidget {
   const SongListTile({
@@ -73,15 +74,11 @@ class _SongListTileState extends State<SongListTile> {
               ),
               Row(
                 children: [
-                  if (metadata.key != null) ...[
-                    Chip(label: Text('Key: ${metadata.key}')),
-                    // Text('Key: ${metadata.key}', style: textTheme.bodyMedium?.copyWith(color: colorScheme.tertiary)),
-                    const SizedBox(width: 4.0),
-                  ],
+                  if (metadata.key != null) ...[Chip(label: Text('Key: ${metadata.key}')), const SizedBox(width: 4.0)],
                   MenuAnchor(
                     animated: true,
                     consumeOutsideTap: true,
-                    alignmentOffset: Offset(-124.0, 0.0),
+                    alignmentOffset: Offset(-124.0, 4.0),
                     menuChildren: [
                       MenuItemButton(
                         onPressed: () async {
@@ -113,7 +110,7 @@ class _SongListTileState extends State<SongListTile> {
                             ],
                           );
                         },
-                        leadingIcon: const Icon(Icons.drive_file_rename_outline_rounded),
+                        leadingIcon: const Icon(Symbols.drive_file_rename_outline_rounded),
                         child: const Text('Rename'),
                       ),
                       MenuItemButton(
@@ -150,7 +147,7 @@ class _SongListTileState extends State<SongListTile> {
                             ],
                           );
                         },
-                        leadingIcon: const Icon(Icons.info_rounded),
+                        leadingIcon: const Icon(Symbols.info_rounded),
                         child: const Text('See information'),
                       ),
                       MenuItemButton(
@@ -183,7 +180,7 @@ class _SongListTileState extends State<SongListTile> {
                             ],
                           );
                         },
-                        leadingIcon: const Icon(Icons.delete_forever_rounded),
+                        leadingIcon: const Icon(Symbols.delete_forever_rounded),
                         child: const Text('Delete'),
                       ),
                     ],
@@ -191,13 +188,7 @@ class _SongListTileState extends State<SongListTile> {
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
                       ),
-                      onPressed: () {
-                        if (controller.isOpen) {
-                          controller.close();
-                        } else {
-                          controller.open();
-                        }
-                      },
+                      onPressed: () => controller.isOpen ? controller.close() : controller.open(),
                       icon: const Icon(Icons.more_vert_rounded),
                     ),
                   ),
