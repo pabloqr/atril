@@ -42,11 +42,9 @@ abstract final class AppRoutes {
   // static final profileRoute = _profileRelative;
   static final settingsRoute = AppRoute(name: 'settings', path: _settingsRelative);
 
-  static final workspaceEditorRoute = AppRoute(name: 'workspace-editor', path: '$_workspaceRelative/editor');
-  static final workspacePreviewRoute = AppRoute(name: 'workspace-preview', path: '$_workspaceRelative/preview');
+  static AppRoute songItemRoute([String filename = ':filename']) =>
+      AppRoute(name: 'song', path: '$_songsRelative/$filename');
 
-  static final songItemRoute = AppRoute(name: 'song', path: '$_songsRelative/:filename');
-
-  static final songPreviewRoute = AppRoute(name: 'song-preview', path: '${songItemRoute.path}/preview');
-  static final songEditorRoute = AppRoute(name: 'song-editor', path: '${songItemRoute.path}/editor');
+  static AppRoute workspaceRoute([String filename = ':filename']) =>
+      AppRoute(name: 'workspace', path: '${songItemRoute(filename).path}$_workspaceRelative');
 }

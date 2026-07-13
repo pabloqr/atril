@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class LoadingScreen extends StatelessWidget {
-  const LoadingScreen({super.key, required this.viewModel});
+  const LoadingScreen({super.key, required this.viewModel, required this.child});
 
   final LoadingViewModel viewModel;
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -27,9 +29,12 @@ class LoadingScreen extends StatelessWidget {
               context.go('${AppRoutes.notFoundRoute.path}?reason=not-found');
             });
           } else {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              context.goNamed(AppRoutes.workspaceEditorRoute.name, pathParameters: {'filename': viewModel.filename});
-            });
+            final state = GoRouterState.of(context);
+            final workspacePath = AppRoutes.workspaceRoute(viewModel.filename).path;
+
+            if (state.uri.path == workspacePath) {
+              return child;
+            }
           }
         }
 

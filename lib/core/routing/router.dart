@@ -1,5 +1,4 @@
 import 'package:atril/core/routing/routes.dart';
-import 'package:atril/data/repositories/song/song_repository.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/dashboard/widgets/song_list_screen.dart';
 import 'package:atril/features/loading/view_model/loading_view_model.dart';
@@ -46,42 +45,19 @@ GoRouter router() => GoRouter(
     ),
 
     GoRoute(
-      path: AppRoutes.songItemRoute.path,
-      name: AppRoutes.songItemRoute.name,
-      builder: (context, state) => LoadingScreen(
-        viewModel: LoadingViewModel(
-          songRepository: context.read<SongRepository>(),
-          filename: state.pathParameters['filename']!,
-        ),
-      ),
-      routes: [
-        StatefulShellRoute.indexedStack(
-          builder: (context, state, navigationShell) => WorkspaceScaffold(
-            navigationShell: navigationShell,
-            viewModel: WorkspaceViewModel(songRepository: context.read(), filename: state.pathParameters['filename']!),
+      path: AppRoutes.workspaceRoute().path,
+      name: AppRoutes.workspaceRoute().name,
+      builder: (context, state) {
+        final filename = state.pathParameters['filename']!;
+
+        return LoadingScreen(
+          viewModel: LoadingViewModel(songRepository: context.read(), filename: filename),
+          child: WorkspaceScaffold(
+            key: ValueKey(filename),
+            viewModel: WorkspaceViewModel(songRepository: context.read(), filename: filename),
           ),
-          branches: [
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: AppRoutes.workspaceEditorRoute.path,
-                  name: AppRoutes.workspaceEditorRoute.name,
-                  builder: (context, state) => const Center(child: Text('Editor')),
-                ),
-              ],
-            ),
-            StatefulShellBranch(
-              routes: [
-                GoRoute(
-                  path: AppRoutes.workspacePreviewRoute.path,
-                  name: AppRoutes.workspacePreviewRoute.name,
-                  builder: (context, state) => const Center(child: Text('Preview')),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
+        );
+      },
     ),
   ],
 );

@@ -26,6 +26,7 @@ abstract final class AtrilTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      iconTheme: base.iconTheme.copyWith(size: 24, fill: 0, weight: 400, grade: 0, opticalSize: 24),
       progressIndicatorTheme: ProgressIndicatorThemeData(
         // ignore: deprecated_member_use
         year2023: true,
