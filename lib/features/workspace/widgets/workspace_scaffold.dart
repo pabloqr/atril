@@ -1,6 +1,6 @@
 import 'package:atril/core/routing/routes.dart';
-import 'package:atril/features/core/widgets/bottom_toolbar.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
+import 'package:atril/features/core/widgets/toolbar.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -75,8 +75,6 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return ListenableBuilder(
       listenable: widget.viewModel.load,
       builder: (context, child) {
@@ -100,42 +98,37 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0),
                   child: SafeArea(
-                    child: BottomToolbar(
-                      showFab: true,
-                      onFabTap: () {},
-                      fabChild: const Icon(Symbols.music_note_add_rounded),
-                      collapsibleItems: [
-                        BottomToolbarCollapsibleItem(
-                          icon: Icons.swap_vert_rounded,
-                          label: 'Transpose',
-                          onPressed: () {},
-                        ),
-                        BottomToolbarCollapsibleItem(icon: Icons.spellcheck_rounded, label: 'Issues', onPressed: () {}),
-                      ],
+                    child: Toolbar(
+                      showFab: !_isPreview,
+                      floatingActionButton: FloatingActionButton(
+                        onPressed: () {},
+                        tooltip: 'Add musical component',
+                        child: const Icon(Symbols.music_note_add_rounded),
+                      ),
                       children: [
-                        AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          child: IconButton(
-                            key: ValueKey(_isPreview),
-                            style: IconButton.styleFrom(
-                              backgroundColor: _isPreview
-                                  ? colorScheme.secondaryContainer
-                                  : colorScheme.surfaceContainer,
-                            ),
-                            color: _isPreview ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-                            onPressed: _togglePage,
-                            icon: Icon(
-                              _isPreview ? Symbols.visibility_off_rounded : Symbols.visibility_rounded,
-                              key: ValueKey(_isPreview),
-                            ),
+                        ToolbarIconButton(
+                          key: ValueKey(_isPreview),
+                          animate: true,
+                          onPressed: _togglePage,
+                          icon: Symbols.visibility_rounded,
+                          selectedIcon: Symbols.visibility_off_rounded,
+                          isSelected: _isPreview,
+                          label: 'Switch view',
+                        ),
+                        ToolbarSeparator(),
+                        ToolbarIconButton(onPressed: () {}, icon: Symbols.undo_rounded, label: 'Undo'),
+                        ToolbarIconButton(onPressed: () {}, icon: Symbols.redo_rounded, label: 'Redo'),
+                        if (!_isPreview) ...[
+                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.swap_vert_rounded, label: 'Transpose'),
+                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.spellcheck_rounded, label: 'Issues'),
+                        ] else ...[
+                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.swap_vert_rounded, label: 'Semitones'),
+                          ToolbarCollapsibleItem(
+                            onPressed: () {},
+                            icon: Symbols.discover_tune_rounded,
+                            label: 'Advanced options',
                           ),
-                        ),
-                        const SizedBox(
-                          height: 48.0,
-                          child: VerticalDivider(width: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
-                        ),
-                        IconButton(onPressed: () {}, icon: const Icon(Symbols.undo_rounded)),
-                        IconButton(onPressed: () {}, icon: const Icon(Symbols.redo_rounded)),
+                        ],
                       ],
                     ),
                   ),
