@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+const _kCompactBreakpoint = 600.0;
+
 enum _WorkspacePage {
   editor,
   preview;
@@ -80,61 +82,93 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
       builder: (context, child) {
         return Scaffold(
           appBar: _buildAppbar(context),
-          body: Stack(
-            children: [
-              SafeArea(
-                child: PageView(
-                  controller: _pageController,
-                  physics: const NeverScrollableScrollPhysics(),
-                  onPageChanged: _handlePageChanged,
-                  children: [
-                    const Center(child: Text('Editor')),
-                    const Center(child: Text('Preview')),
-                  ],
-                ),
-              ),
-              Align(
-                alignment: AlignmentGeometry.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0),
-                  child: SafeArea(
-                    child: Toolbar(
-                      showFab: !_isPreview,
-                      floatingActionButton: FloatingActionButton(
-                        onPressed: () {},
-                        tooltip: 'Add musical component',
-                        child: const Icon(Symbols.music_note_add_rounded),
-                      ),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < _kCompactBreakpoint;
+
+              return Stack(
+                children: [
+                  SafeArea(
+                    child: PageView(
+                      controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
+                      onPageChanged: _handlePageChanged,
                       children: [
-                        ToolbarIconButton(
-                          key: ValueKey(_isPreview),
-                          animate: true,
-                          onPressed: _togglePage,
-                          icon: Symbols.visibility_rounded,
-                          selectedIcon: Symbols.visibility_off_rounded,
-                          isSelected: _isPreview,
-                          label: 'Switch view',
-                        ),
-                        ToolbarSeparator(),
-                        ToolbarIconButton(onPressed: () {}, icon: Symbols.undo_rounded, label: 'Undo'),
-                        ToolbarIconButton(onPressed: () {}, icon: Symbols.redo_rounded, label: 'Redo'),
-                        if (!_isPreview) ...[
-                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.swap_vert_rounded, label: 'Transpose'),
-                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.spellcheck_rounded, label: 'Issues'),
-                        ] else ...[
-                          ToolbarCollapsibleItem(onPressed: () {}, icon: Icons.swap_vert_rounded, label: 'Semitones'),
-                          ToolbarCollapsibleItem(
-                            onPressed: () {},
-                            icon: Symbols.discover_tune_rounded,
-                            label: 'Advanced options',
-                          ),
-                        ],
+                        const Center(child: Text('Editor')),
+                        const Center(child: Text('Preview')),
                       ],
                     ),
                   ),
-                ),
-              ),
-            ],
+                  Positioned.fill(
+                    child: AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      transitionBuilder: (child, animation) => _ToolbarSlideTransition(
+                        animation: animation,
+                        isCompact: (child.key! as ValueKey<bool>).value,
+                        child: child,
+                      ),
+                      child: Align(
+                        key: ValueKey(isCompact),
+                        alignment: isCompact ? Alignment.bottomCenter : Alignment.centerRight,
+                        child: Padding(
+                          padding: isCompact
+                              ? const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0)
+                              : const EdgeInsets.fromLTRB(0.0, 16.0, 24.0, 16.0),
+                          child: SafeArea(
+                            child: Toolbar(
+                              direction: isCompact ? Axis.horizontal : Axis.vertical,
+                              showFab: !_isPreview,
+                              floatingActionButton: FloatingActionButton(
+                                onPressed: () {},
+                                tooltip: 'Add musical component',
+                                child: const Icon(Symbols.music_note_add_rounded),
+                              ),
+                              children: [
+                                ToolbarIconButton(
+                                  key: ValueKey(_isPreview),
+                                  animate: true,
+                                  onPressed: _togglePage,
+                                  icon: Symbols.visibility_rounded,
+                                  selectedIcon: Symbols.visibility_off_rounded,
+                                  isSelected: _isPreview,
+                                  label: 'Switch view',
+                                ),
+                                ToolbarSeparator(),
+                                ToolbarIconButton(onPressed: () {}, icon: Symbols.undo_rounded, label: 'Undo'),
+                                ToolbarIconButton(onPressed: () {}, icon: Symbols.redo_rounded, label: 'Redo'),
+                                if (!_isPreview) ...[
+                                  ToolbarCollapsibleItem(
+                                    onPressed: () {},
+                                    icon: Icons.swap_vert_rounded,
+                                    label: 'Transpose',
+                                  ),
+                                  ToolbarCollapsibleItem(
+                                    onPressed: () {},
+                                    icon: Icons.spellcheck_rounded,
+                                    label: 'Issues',
+                                  ),
+                                ] else ...[
+                                  ToolbarCollapsibleItem(
+                                    onPressed: () {},
+                                    icon: Icons.swap_vert_rounded,
+                                    label: 'Semitones',
+                                  ),
+                                  ToolbarCollapsibleItem(
+                                    onPressed: () {},
+                                    icon: Symbols.discover_tune_rounded,
+                                    label: 'Advanced options',
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         );
       },
@@ -245,6 +279,35 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
         ),
         const SizedBox(width: 8.0),
       ],
+    );
+  }
+}
+
+class _ToolbarSlideTransition extends AnimatedWidget {
+  const _ToolbarSlideTransition({required Animation<double> animation, required this.isCompact, required this.child})
+    : super(listenable: animation);
+
+  final bool isCompact;
+  final Widget child;
+
+  Animation<double> get _animation => listenable as Animation<double>;
+
+  @override
+  Widget build(BuildContext context) {
+    final isOutgoing = _animation.status == AnimationStatus.reverse;
+    final progress = isOutgoing
+        ? Curves.easeInOutCubicEmphasized.transform(1.0 - _animation.value)
+        : 1.0 - Curves.easeInOutCubicEmphasized.transform(_animation.value);
+    final safePadding = MediaQuery.paddingOf(context);
+    final distance = 88.0 + (isCompact ? safePadding.bottom : safePadding.right);
+    final offset = isCompact ? Offset(0.0, distance * progress) : Offset(distance * progress, 0.0);
+
+    return IgnorePointer(
+      ignoring: isOutgoing,
+      child: ExcludeSemantics(
+        excluding: isOutgoing,
+        child: Transform.translate(offset: offset, child: child),
+      ),
     );
   }
 }
