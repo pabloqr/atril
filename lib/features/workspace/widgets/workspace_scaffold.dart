@@ -1,5 +1,6 @@
 import 'package:atril/core/routing/routes.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
+import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/material.dart';
@@ -19,9 +20,17 @@ enum _WorkspacePage {
 }
 
 class WorkspaceScaffold extends StatefulWidget {
-  const WorkspaceScaffold({super.key, required this.viewModel});
+  const WorkspaceScaffold({
+    super.key,
+    required this.viewModel,
+    required this.editorScreen,
+    required this.previewScreen,
+  });
 
   final WorkspaceViewModel viewModel;
+
+  final Widget editorScreen;
+  final Widget previewScreen;
 
   @override
   State<WorkspaceScaffold> createState() => _WorkspaceScaffoldState();
@@ -89,14 +98,14 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
               return Stack(
                 children: [
                   SafeArea(
-                    child: PageView(
-                      controller: _pageController,
-                      physics: const NeverScrollableScrollPhysics(),
-                      onPageChanged: _handlePageChanged,
-                      children: [
-                        const Center(child: Text('Editor')),
-                        const Center(child: Text('Preview')),
-                      ],
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: isCompact ? 88.0 : 0.0),
+                      child: PageView(
+                        controller: _pageController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        onPageChanged: _handlePageChanged,
+                        children: [widget.editorScreen, widget.previewScreen],
+                      ),
                     ),
                   ),
                   Positioned.fill(
@@ -118,11 +127,28 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                             child: Toolbar(
                               direction: isCompact ? Axis.horizontal : Axis.vertical,
                               showFab: !_isPreview,
-                              floatingActionButton: FloatingActionButton(
-                                onPressed: () {},
-                                tooltip: 'Add musical component',
-                                child: const Icon(Symbols.music_note_add_rounded),
-                              ),
+                              floatingActionButton: isCompact
+                                  ? FabMenu(
+                                      fabTooltip: 'Add musical component',
+                                      fabIcon: Symbols.music_note_add_rounded,
+                                      items: [
+                                        FabMenuItem(
+                                          icon: Symbols.music_note_2_rounded,
+                                          label: 'Add chord',
+                                          onPressed: () {},
+                                        ),
+                                        FabMenuItem(
+                                          icon: Symbols.data_object_rounded,
+                                          label: 'Add directive',
+                                          onPressed: () {},
+                                        ),
+                                      ],
+                                    )
+                                  : FloatingActionButton(
+                                      onPressed: () {},
+                                      tooltip: 'Add musical component',
+                                      child: const Icon(Symbols.music_note_add_rounded),
+                                    ),
                               children: [
                                 ToolbarIconButton(
                                   key: ValueKey(_isPreview),
