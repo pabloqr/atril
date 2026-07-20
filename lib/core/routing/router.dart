@@ -62,9 +62,7 @@ GoRouter router() => GoRouter(
             key: ValueKey(filename),
             viewModel: workspaceViewModel,
             // editorScreen: const Center(child: Text('Editor')),
-            editorScreen: EditorScreen(
-              viewModel: EditorViewModel(workspaceViewModel: workspaceViewModel, songRepository: context.read()),
-            ),
+            editorScreen: EditorScreen(viewModel: EditorViewModel(workspaceViewModel: workspaceViewModel)),
             previewScreen: const Center(child: Text('Preview')),
           ),
         );
