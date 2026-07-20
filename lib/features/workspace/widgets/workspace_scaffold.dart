@@ -205,23 +205,35 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final menuOffsetX = switch (Theme.of(context).visualDensity) {
+      VisualDensity.standard => -132.0,
+      VisualDensity.compact => -126.0,
+      _ => 0.0,
+    };
+
     return AppBar(
-      leading: IconButton(onPressed: _closeWorkspace, icon: const Icon(Icons.close_rounded)),
+      leading: IconButton(
+        style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),
+        onPressed: _closeWorkspace,
+        icon: const Icon(Symbols.close_rounded),
+      ),
       title: Text(_selectedPage.title),
       actions: [
         FilledButton(
           style: FilledButton.styleFrom(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             minimumSize: const Size(0.0, 48.0),
+            fixedSize: const Size.fromHeight(48.0),
           ),
           onPressed: () {},
           child: const Text('Save'),
         ),
         const SizedBox(width: 4.0),
         MenuAnchor(
-          animated: true,
+          style: const MenuStyle(alignment: AlignmentDirectional.bottomStart),
+          alignmentOffset: Offset(menuOffsetX, 4.0),
           consumeOutsideTap: true,
-          alignmentOffset: Offset(-124.0, 4.0),
+          animated: true,
           menuChildren: [
             MenuItemButton(
               onPressed: () {},
@@ -298,7 +310,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
             ),
           ],
           builder: (context, controller, child) => IconButton(
-            style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0))),
+            style: IconButton.styleFrom(minimumSize: const Size(0.0, 48.0)),
             onPressed: () => controller.isOpen ? controller.close() : controller.open(),
             icon: const Icon(Icons.more_vert_rounded),
           ),
