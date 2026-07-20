@@ -1,3 +1,4 @@
+import 'package:atril/core/routing/route_observer.dart';
 import 'package:atril/core/routing/routes.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/dashboard/widgets/song_list_screen.dart';
@@ -34,6 +35,7 @@ Widget withSystemUiOverlay(BuildContext context, {required Widget child}) {
 GoRouter router() => GoRouter(
   initialLocation: AppRoutes.homeRoute.path,
   debugLogDiagnostics: true,
+  observers: [appRouteObserver],
   routes: [
     GoRoute(
       path: AppRoutes.homeRoute.path,
