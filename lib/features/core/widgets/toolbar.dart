@@ -93,8 +93,7 @@ class Toolbar extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: item.isSelected ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
         foregroundColor: item.isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-        // fixedSize: Size.square(48.0),
-        // tapTargetSize: MaterialTapTargetSize.padded,
+        tapTargetSize: MaterialTapTargetSize.padded,
       ),
       isSelected: item.isSelected,
       onPressed: item.onPressed,
