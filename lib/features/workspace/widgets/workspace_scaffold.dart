@@ -4,6 +4,7 @@ import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -46,6 +47,8 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
   void initState() {
     super.initState();
 
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+
     _pageController = PageController(initialPage: _selectedPage.index);
   }
 
@@ -54,6 +57,8 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     _pageController.dispose();
 
     _filenameController.dispose();
+
+    SystemChrome.setPreferredOrientations([]);
 
     super.dispose();
   }
