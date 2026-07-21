@@ -100,6 +100,7 @@ class _EditorScreenState extends State<EditorScreen> {
                   enabledBorder: InputBorder.none,
                   border: InputBorder.none,
                 ),
+                style: textTheme.bodyLarge?.copyWith(color: colorScheme.onSurface),
                 expands: true,
                 minLines: null,
                 maxLines: null,
