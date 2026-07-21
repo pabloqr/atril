@@ -366,9 +366,8 @@ class _OverflowMenuButton extends StatelessWidget {
     final dy = direction == Axis.horizontal ? 16.0 : -88.0;
 
     return MenuAnchor(
-      animated: true,
-      consumeOutsideTap: true,
       alignmentOffset: Offset(dx, dy),
+      animated: true,
       menuChildren: [
         for (final item in items)
           MenuItemButton(onPressed: item.onPressed, leadingIcon: Icon(item.icon), child: Text(item.label)),

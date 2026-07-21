@@ -283,7 +283,11 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin, 
 
   @override
   Widget build(BuildContext context) {
-    return KeyedSubtree(key: _fabAnchorKey, child: _buildAnchorFab(context));
+    return TapRegion(
+      groupId: this,
+      onTapOutside: (_) => _close(),
+      child: KeyedSubtree(key: _fabAnchorKey, child: _buildAnchorFab(context)),
+    );
   }
 
   Widget _buildOverlayContent(BuildContext overlayContext) {
@@ -309,7 +313,7 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin, 
                 child: IgnorePointer(
                   ignoring: !_expanded,
                   child: GestureDetector(
-                    onTap: _toggle,
+                    onTap: _close,
                     child: Container(color: Colors.black.withAlpha(opacity)),
                   ),
                 ),
@@ -320,21 +324,24 @@ class _FabMenuState extends State<FabMenu> with SingleTickerProviderStateMixin, 
           bottom: screenSize.height - (topLeft.dy + fabSize.height),
           right: alignRight ? screenSize.width - (topLeft.dx + fabSize.width) : null,
           left: alignRight ? null : topLeft.dx,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-            spacing: 8.0,
-            children: [
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                spacing: 4.0,
-                children: [
-                  for (var i = widget.items.length - 1; i >= 0; i--) _buildMenuItem(overlayContext, i, alignRight),
-                ],
-              ),
-              _buildAnchorFab(overlayContext),
-            ],
+          child: TapRegion(
+            groupId: this,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              spacing: 8.0,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: alignRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  spacing: 4.0,
+                  children: [
+                    for (var i = widget.items.length - 1; i >= 0; i--) _buildMenuItem(overlayContext, i, alignRight),
+                  ],
+                ),
+                _buildAnchorFab(overlayContext),
+              ],
+            ),
           ),
         ),
       ],
