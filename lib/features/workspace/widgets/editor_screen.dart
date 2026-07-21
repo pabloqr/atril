@@ -71,6 +71,10 @@ class _EditorScreenState extends State<EditorScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
+    final charsText = widget.viewModel.start != widget.viewModel.end
+        ? '${widget.viewModel.end - widget.viewModel.start} of ${_controller.text.length} characters'
+        : '${_controller.text.length} characters';
+
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOutCubicEmphasized,
@@ -113,13 +117,12 @@ class _EditorScreenState extends State<EditorScreen> {
             child: DefaultTextStyle.merge(
               style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant),
               child: Wrap(
-                spacing: 32.0,
+                spacing: 8.0,
                 runSpacing: 4.0,
                 children: [
                   Text('Line $_line · Column $_column'),
-                  if (widget.viewModel.start != widget.viewModel.end)
-                    Text('${widget.viewModel.end - widget.viewModel.start} selected'),
-                  Text('${_controller.text.length} characters'),
+                  SizedBox(height: 16.0, child: const VerticalDivider(width: 16.0, thickness: 1.0)),
+                  Text(charsText),
                 ],
               ),
             ),
