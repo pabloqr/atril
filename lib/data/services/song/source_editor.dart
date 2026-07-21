@@ -56,6 +56,8 @@ final class SourceFragment {
 /// line-ending convention. Header directives are kept in canonical order;
 /// body directives and chords are inserted relative to the current selection.
 final class SourceEditor {
+  const SourceEditor();
+
   /// Inserts or selects a directive according to its structural location.
   ///
   /// Existing header directives are not duplicated: their value is selected
@@ -75,8 +77,8 @@ final class SourceEditor {
       RangeSelection(:final start) => start,
     };
 
-    if (insertPosition != null) {
-      final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition)];
+    if (_isValidOffset(insertPosition, fragment.source.length)) {
+      final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition!)];
       final fragmentOffset = line.start;
 
       return _insertLineBefore(fragment.source, fragmentOffset, _templateForDirective(directiveType.name));
@@ -100,9 +102,12 @@ final class SourceEditor {
       RangeSelection(:final start, :final end) => (start, end),
     };
 
-    if (insertPosition != null && endPosition != null) {
-      final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition)];
-      final endLine = lines[lines.indexWhere((line) => line.contentEnd >= endPosition)];
+    final validInsertPosition = _isValidOffset(insertPosition, fragment.source.length);
+    final validEndPosition = _isValidOffset(endPosition, fragment.source.length);
+
+    if (validInsertPosition && validEndPosition) {
+      final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition!)];
+      final endLine = lines[lines.indexWhere((line) => line.contentEnd >= endPosition!)];
 
       if (line.start == endLine.start) {
         final directive = _parseDirective(line);
@@ -112,7 +117,7 @@ final class SourceEditor {
             final chordStart = line.start + chord.start;
             final chordEnd = line.start + chord.end;
 
-            if (chordStart < insertPosition && endPosition < chordEnd) {
+            if (chordStart < insertPosition! && endPosition! < chordEnd) {
               final chordRange = chord.namedGroupRange('chord')!;
               return SourceFragment(
                 source: fragment.source,
@@ -122,11 +127,11 @@ final class SourceEditor {
           }
 
           if (insertPosition == endPosition) {
-            return _insertBefore(fragment.source, insertPosition, _templateForChord());
+            return _insertBefore(fragment.source, insertPosition!, _templateForChord());
           }
 
           final chord = Patterns.chord.firstMatch(
-            line.content.substring(insertPosition - line.start, endPosition - line.start),
+            line.content.substring(insertPosition! - line.start, endPosition! - line.start),
           );
 
           if (chord != null) {
@@ -189,30 +194,18 @@ final class SourceEditor {
   List<_SourceLine> _sourceLines(String source) {
     final lines = <_SourceLine>[];
 
-    var index = 0;
-    while (index < source.length) {
-      final lineBreak = RegExp(r'\r\n|\r|\n').firstMatch(source.substring(index));
-      if (lineBreak == null) {
-        lines.add(_SourceLine(start: index, content: source.substring(index), lineEnding: ''));
-        index = source.length;
-        break;
-      }
+    final lineEndingPattern = RegExp(r'\r\n|\r|\n');
 
-      final contentEnd = index + lineBreak.start;
-      final end = index + lineBreak.end;
-      lines.add(
-        _SourceLine(
-          start: index,
-          content: source.substring(index, contentEnd),
-          lineEnding: source.substring(contentEnd, end),
-        ),
-      );
-      index = end;
+    var index = 0;
+    for (final line in lineEndingPattern.allMatches(source)) {
+      lines.add(_SourceLine(start: index, content: source.substring(index, line.start), lineEnding: line.group(0)!));
+
+      index = line.end;
     }
 
-    // A trailing logical line is needed so a caret after the final newline can
-    // participate in the same offset lookup as every other line.
-    if (source.isEmpty || _endsWithNewline(source)) {
+    if (index < source.length) {
+      lines.add(_SourceLine(start: index, content: source.substring(index), lineEnding: ''));
+    } else {
       lines.add(_SourceLine(start: source.length, content: '', lineEnding: ''));
     }
 
@@ -292,9 +285,11 @@ final class SourceEditor {
 
   String _templateForDirective(String name) => '{$name: }';
 
-  int _fragmentOffset(String template) => template.indexOfAny(['}', ']']);
-
   String _templateForChord([String chord = '']) => '[$chord]';
+
+  bool _isValidOffset(int? offset, int sourceLength) => offset != null && 0 <= offset && offset <= sourceLength;
+
+  int _fragmentOffset(String template) => template.indexOfAny(['}', ']']);
 
   String _newlineFor(String source) {
     final match = RegExp(r'\r\n|\r|\n').firstMatch(source);
