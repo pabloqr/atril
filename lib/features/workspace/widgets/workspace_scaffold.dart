@@ -149,10 +149,27 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         ),
                                       ],
                                     )
-                                  : FloatingActionButton(
-                                      onPressed: () {},
-                                      tooltip: 'Add musical component',
-                                      child: const Icon(Symbols.music_note_add_rounded),
+                                  : MenuAnchor(
+                                      style: const MenuStyle(alignment: AlignmentDirectional.topStart),
+                                      alignmentOffset: Offset(-150.0, 0.0),
+                                      animated: true,
+                                      menuChildren: [
+                                        MenuItemButton(
+                                          onPressed: () {},
+                                          leadingIcon: const Icon(Symbols.data_object_rounded),
+                                          child: const Text('Add directive'),
+                                        ),
+                                        MenuItemButton(
+                                          onPressed: () {},
+                                          leadingIcon: const Icon(Symbols.music_note_2_rounded),
+                                          child: const Text('Add chord'),
+                                        ),
+                                      ],
+                                      builder: (context, controller, _) => FloatingActionButton(
+                                        onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                                        tooltip: 'Add musical component',
+                                        child: const Icon(Symbols.music_note_add_rounded),
+                                      ),
                                     ),
                               children: [
                                 ToolbarIconButton(
@@ -314,7 +331,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
               child: const Text('Delete'),
             ),
           ],
-          builder: (context, controller, child) => IconButton(
+          builder: (context, controller, _) => IconButton(
             style: IconButton.styleFrom(minimumSize: const Size(0.0, 48.0)),
             onPressed: () => controller.isOpen ? controller.close() : controller.open(),
             icon: const Icon(Icons.more_vert_rounded),
