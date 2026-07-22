@@ -1,5 +1,6 @@
 import 'package:atril/core/routing/route_observer.dart';
 import 'package:atril/core/routing/routes.dart';
+import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/dashboard/widgets/song_list_screen.dart';
 import 'package:atril/features/loading/view_model/loading_view_model.dart';
@@ -55,6 +56,10 @@ GoRouter router() => GoRouter(
         final filename = state.pathParameters['filename']!;
 
         final workspaceViewModel = WorkspaceViewModel(songRepository: context.read(), filename: filename);
+        final editorViewModel = EditorViewModel(
+          workspaceViewModel: workspaceViewModel,
+          sourceEditor: const SourceEditor(),
+        );
 
         return LoadingScreen(
           viewModel: LoadingViewModel(songRepository: context.read(), filename: filename),
@@ -62,7 +67,7 @@ GoRouter router() => GoRouter(
             key: ValueKey(filename),
             viewModel: workspaceViewModel,
             // editorScreen: const Center(child: Text('Editor')),
-            editorScreen: EditorScreen(viewModel: EditorViewModel(workspaceViewModel: workspaceViewModel)),
+            editorScreen: EditorScreen(viewModel: editorViewModel),
             previewScreen: const Center(child: Text('Preview')),
           ),
         );

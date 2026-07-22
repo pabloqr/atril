@@ -1,3 +1,4 @@
+import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:flutter/material.dart';
 
@@ -14,56 +15,142 @@ class _EditorScreenState extends State<EditorScreen> {
   late final TextEditingController _controller;
   late final FocusNode _focusNode;
 
+  bool _updatingControllerFromViewModel = false;
+
   int _line = 0;
   int _column = 0;
+  int _selectedCharacterCount = 0;
+  int _characterCount = 0;
 
   @override
   void initState() {
     super.initState();
 
-    _controller = TextEditingController(text: widget.viewModel.source);
+    _controller = TextEditingController.fromValue(
+      TextEditingValue(
+        text: widget.viewModel.source,
+        selection: _selectionToTextSelection(widget.viewModel.selection, widget.viewModel.source.length),
+      ),
+    );
     _focusNode = FocusNode();
 
-    _controller.addListener(_handleEditorChanged);
+    widget.viewModel.addListener(_handleViewModelChanged);
+    _controller.addListener(_handleControllerChanged);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      widget.viewModel.start = widget.viewModel.start.clamp(0, _controller.text.length);
-      widget.viewModel.end = widget.viewModel.end.clamp(0, _controller.text.length);
-
-      _controller.selection = TextSelection(baseOffset: widget.viewModel.start, extentOffset: widget.viewModel.end);
       _focusNode.requestFocus();
+
+      if (!_controller.selection.isValid) {
+        _controller.selection = const TextSelection.collapsed(offset: 0);
+      }
+
+      _updateSelection(_controller.value);
     });
   }
 
   @override
+  void didUpdateWidget(EditorScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.viewModel == widget.viewModel) return;
+
+    oldWidget.viewModel.removeListener(_handleViewModelChanged);
+    widget.viewModel.addListener(_handleViewModelChanged);
+
+    _handleViewModelChanged();
+  }
+
+  @override
   void dispose() {
-    _controller
-      ..removeListener(_handleEditorChanged)
-      ..dispose();
     _focusNode.dispose();
+
+    widget.viewModel.removeListener(_handleViewModelChanged);
+    _controller
+      ..removeListener(_handleControllerChanged)
+      ..dispose();
 
     super.dispose();
   }
 
-  void _handleEditorChanged() {
-    final selection = _controller.selection;
+  void _handleViewModelChanged() {
+    final source = widget.viewModel.source;
+    final nextValue = TextEditingValue(
+      text: source,
+      selection: _selectionToTextSelection(widget.viewModel.selection, source.length),
+    );
 
+    if (_controller.value == nextValue) return;
+
+    _updatingControllerFromViewModel = true;
+    try {
+      _controller.value = nextValue;
+    } finally {
+      _updatingControllerFromViewModel = false;
+    }
+
+    _updateSelection(nextValue);
+  }
+
+  void _handleControllerChanged() {
+    if (_updatingControllerFromViewModel) return;
+
+    final value = _controller.value;
+
+    widget.viewModel.update(value.text, _textSelectionToSelection(value.selection, value.text.length));
+
+    _updateSelection(value);
+  }
+
+  void _updateSelection(TextEditingValue value) {
+    final selection = value.selection;
     if (!selection.isValid) {
+      setState(() {
+        _characterCount = value.text.length;
+        _selectedCharacterCount = 0;
+      });
+
       return;
     }
 
-    widget.viewModel.start = selection.start.clamp(0, _controller.text.length);
-    widget.viewModel.end = selection.end.clamp(0, _controller.text.length);
+    final cursorOffset = selection.extentOffset.clamp(0, value.text.length);
 
-    final textBeforeCursor = _controller.text.substring(0, widget.viewModel.start);
+    final textBeforeCursor = value.text.substring(0, cursorOffset);
     final lines = textBeforeCursor.split('\n');
 
     setState(() {
       _line = lines.length;
       _column = lines.last.length + 1;
+      _characterCount = value.text.length;
+      _selectedCharacterCount = selection.end - selection.start;
     });
+  }
+
+  Selection _textSelectionToSelection(TextSelection selection, int sourceLength) {
+    if (!selection.isValid) {
+      return const NoSelection();
+    }
+
+    final start = selection.start.clamp(0, sourceLength);
+    final end = selection.end.clamp(0, sourceLength);
+
+    if (start == end) {
+      return PositionSelection(selection.extentOffset.clamp(0, sourceLength));
+    }
+
+    return RangeSelection(start, end);
+  }
+
+  TextSelection _selectionToTextSelection(Selection selection, int sourceLength) {
+    return switch (selection) {
+      NoSelection() => const TextSelection.collapsed(offset: -1),
+      PositionSelection(:final position) => TextSelection.collapsed(offset: position.clamp(0, sourceLength)),
+      RangeSelection(:final start, :final end) => TextSelection(
+        baseOffset: start.clamp(0, sourceLength),
+        extentOffset: end.clamp(0, sourceLength),
+      ),
+    };
   }
 
   @override
@@ -71,9 +158,9 @@ class _EditorScreenState extends State<EditorScreen> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    final charsText = widget.viewModel.start != widget.viewModel.end
-        ? '${widget.viewModel.end - widget.viewModel.start} of ${_controller.text.length} characters'
-        : '${_controller.text.length} characters';
+    final charsText = _selectedCharacterCount > 0
+        ? '$_selectedCharacterCount of $_characterCount characters'
+        : '$_characterCount characters';
 
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
