@@ -32,14 +32,24 @@ final class EditorViewModel extends ChangeNotifier {
     _apply(source, selection, false);
   }
 
-  void insertDirective(DirectiveType directiveType) {
+  SourceEditResult insertDirective(DirectiveType directiveType) {
     final result = _sourceEditor.insertDirective(SourceFragment(source: source, selection: _selection), directiveType);
-    _apply(result.source, result.selection);
+
+    if (result case SourceEditApplied(:final fragment)) {
+      _apply(fragment.source, fragment.selection);
+    }
+
+    return result;
   }
 
-  void insertChord() {
+  SourceEditResult insertChord() {
     final result = _sourceEditor.insertChord(SourceFragment(source: source, selection: _selection));
-    _apply(result.source, result.selection);
+
+    if (result case SourceEditApplied(:final fragment)) {
+      _apply(fragment.source, fragment.selection);
+    }
+
+    return result;
   }
 
   void _apply(String source, Selection selection, [bool notify = true]) {

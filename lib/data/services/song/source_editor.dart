@@ -50,6 +50,24 @@ final class SourceFragment {
   final Selection selection;
 }
 
+sealed class SourceEditResult {
+  const SourceEditResult();
+}
+
+final class SourceEditApplied extends SourceEditResult {
+  const SourceEditApplied(this.fragment);
+
+  final SourceFragment fragment;
+}
+
+final class SourceEditRejected extends SourceEditResult {
+  const SourceEditRejected(this.reason);
+
+  final SourceEditRejection reason;
+}
+
+enum SourceEditRejection { noSelection, invalidSelection, multilineSelection, directiveLine, unsupportedDirective }
+
 /// Performs source-preserving insertions for Atril's ChordPro editor.
 ///
 /// Operations modify only the requested range and retain the source's existing
@@ -64,11 +82,11 @@ final class SourceEditor {
   /// instead. A missing header directive is inserted among other recognized
   /// header fields. Body directives require a selection and are inserted at
   /// the start of its line. Unsupported locations leave [fragment] unchanged.
-  SourceFragment insertDirective(SourceFragment fragment, DirectiveType directiveType) {
+  SourceEditResult insertDirective(SourceFragment fragment, DirectiveType directiveType) {
     final lines = _sourceLines(fragment.source);
 
     if (directiveType.location == DirectiveLocation.header) {
-      return _insertHeaderDirective(fragment.source, lines, directiveType);
+      return SourceEditApplied(_insertHeaderDirective(fragment.source, lines, directiveType));
     }
 
     final insertPosition = switch (fragment.selection) {
@@ -81,10 +99,12 @@ final class SourceEditor {
       final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition!)];
       final fragmentOffset = line.start;
 
-      return _insertLineBefore(fragment.source, fragmentOffset, _templateForDirective(directiveType.name));
+      return SourceEditApplied(
+        _insertLineBefore(fragment.source, fragmentOffset, _templateForDirective(directiveType.name)),
+      );
     }
 
-    return fragment;
+    return SourceEditRejected(SourceEditRejection.invalidSelection);
   }
 
   /// Inserts an inline chord marker or selects an existing marker's contents.
@@ -93,7 +113,7 @@ final class SourceEditor {
   /// existing marker selects its chord text. A selected valid chord is wrapped
   /// in brackets; other selected text is replaced with an empty marker.
   /// Invalid, cross-line, or absent selections leave [fragment] unchanged.
-  SourceFragment insertChord(SourceFragment fragment) {
+  SourceEditResult insertChord(SourceFragment fragment) {
     final lines = _sourceLines(fragment.source);
 
     final (insertPosition, endPosition) = switch (fragment.selection) {
@@ -105,55 +125,59 @@ final class SourceEditor {
     final validInsertPosition = _isValidOffset(insertPosition, fragment.source.length);
     final validEndPosition = _isValidOffset(endPosition, fragment.source.length);
 
-    if (validInsertPosition && validEndPosition) {
-      final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition!)];
-      final endLine = lines[lines.indexWhere((line) => line.contentEnd >= endPosition!)];
+    if (!validInsertPosition || !validEndPosition) return SourceEditRejected(SourceEditRejection.invalidSelection);
 
-      if (line.start == endLine.start) {
-        final directive = _parseDirective(line);
-        if (directive == null) {
-          final chords = Patterns.chordInline.allMatches(line.content);
-          for (final chord in chords) {
-            final chordStart = line.start + chord.start;
-            final chordEnd = line.start + chord.end;
+    final line = lines[lines.indexWhere((line) => line.contentEnd >= insertPosition!)];
+    final endLine = lines[lines.indexWhere((line) => line.contentEnd >= endPosition!)];
 
-            if (chordStart < insertPosition! && endPosition! < chordEnd) {
-              final chordRange = chord.namedGroupRange('chord')!;
-              return SourceFragment(
-                source: fragment.source,
-                selection: RangeSelection(line.start + chordRange.$1, line.start + chordRange.$2),
-              );
-            }
-          }
+    if (line.start != endLine.start) return SourceEditRejected(SourceEditRejection.multilineSelection);
 
-          if (insertPosition == endPosition) {
-            return _insertBefore(fragment.source, insertPosition!, _templateForChord());
-          }
+    final directive = _parseDirective(line);
+    if (directive != null) return SourceEditRejected(SourceEditRejection.directiveLine);
 
-          final chord = Patterns.chord.firstMatch(
-            line.content.substring(insertPosition! - line.start, endPosition! - line.start),
-          );
+    final chords = Patterns.chordInline.allMatches(line.content);
+    for (final chord in chords) {
+      final chordStart = line.start + chord.start;
+      final chordEnd = line.start + chord.end;
 
-          if (chord != null) {
-            return SourceFragment(
-              source: fragment.source.replaceRange(
-                insertPosition,
-                endPosition,
-                _templateForChord(fragment.source.substring(insertPosition, endPosition)),
-              ),
-              selection: RangeSelection(insertPosition + 1, endPosition + 1),
-            );
-          }
-
-          return SourceFragment(
-            source: fragment.source.replaceRange(insertPosition, endPosition, _templateForChord()),
-            selection: PositionSelection(insertPosition + 1),
-          );
-        }
+      if (chordStart < insertPosition! && endPosition! < chordEnd) {
+        final chordRange = chord.namedGroupRange('chord')!;
+        return SourceEditApplied(
+          SourceFragment(
+            source: fragment.source,
+            selection: RangeSelection(line.start + chordRange.$1, line.start + chordRange.$2),
+          ),
+        );
       }
     }
 
-    return fragment;
+    if (insertPosition == endPosition) {
+      return SourceEditApplied(_insertBefore(fragment.source, insertPosition!, _templateForChord()));
+    }
+
+    final chord = Patterns.chord.firstMatch(
+      line.content.substring(insertPosition! - line.start, endPosition! - line.start),
+    );
+
+    if (chord != null) {
+      return SourceEditApplied(
+        SourceFragment(
+          source: fragment.source.replaceRange(
+            insertPosition,
+            endPosition,
+            _templateForChord(fragment.source.substring(insertPosition, endPosition)),
+          ),
+          selection: RangeSelection(insertPosition + 1, endPosition + 1),
+        ),
+      );
+    }
+
+    return SourceEditApplied(
+      SourceFragment(
+        source: fragment.source.replaceRange(insertPosition, endPosition, _templateForChord()),
+        selection: PositionSelection(insertPosition + 1),
+      ),
+    );
   }
 
   SourceFragment _insertHeaderDirective(String source, List<_SourceLine> lines, DirectiveType directiveType) {
