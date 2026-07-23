@@ -3,9 +3,11 @@ import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:flutter/material.dart';
 
 class EditorScreen extends StatefulWidget {
-  const EditorScreen({super.key, required this.viewModel});
+  const EditorScreen({super.key, required this.viewModel, required this.focusNode});
 
   final EditorViewModel viewModel;
+
+  final FocusNode focusNode;
 
   @override
   State<EditorScreen> createState() => _EditorScreenState();
@@ -13,7 +15,6 @@ class EditorScreen extends StatefulWidget {
 
 class _EditorScreenState extends State<EditorScreen> {
   late final TextEditingController _controller;
-  late final FocusNode _focusNode;
 
   bool _updatingControllerFromViewModel = false;
 
@@ -32,7 +33,6 @@ class _EditorScreenState extends State<EditorScreen> {
         selection: _selectionToTextSelection(widget.viewModel.selection, widget.viewModel.source.length),
       ),
     );
-    _focusNode = FocusNode();
 
     widget.viewModel.addListener(_handleViewModelChanged);
     _controller.addListener(_handleControllerChanged);
@@ -40,13 +40,13 @@ class _EditorScreenState extends State<EditorScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
-      _focusNode.requestFocus();
-
       if (!_controller.selection.isValid) {
         _controller.selection = const TextSelection.collapsed(offset: 0);
       }
 
       _updateSelection(_controller.value);
+
+      widget.focusNode.requestFocus();
     });
   }
 
@@ -64,8 +64,6 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   void dispose() {
-    _focusNode.dispose();
-
     widget.viewModel.removeListener(_handleViewModelChanged);
     _controller
       ..removeListener(_handleControllerChanged)
@@ -177,7 +175,7 @@ class _EditorScreenState extends State<EditorScreen> {
               ),
               child: TextField(
                 controller: _controller,
-                focusNode: _focusNode,
+                focusNode: widget.focusNode,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(28.0),
                   errorBorder: InputBorder.none,

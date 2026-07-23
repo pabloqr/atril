@@ -7,7 +7,6 @@ import 'package:atril/features/loading/view_model/loading_view_model.dart';
 import 'package:atril/features/loading/widgets/loading_screen.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
-import 'package:atril/features/workspace/widgets/editor_screen.dart';
 import 'package:atril/features/workspace/widgets/workspace_scaffold.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -67,9 +66,6 @@ GoRouter router() => GoRouter(
             key: ValueKey(filename),
             viewModel: workspaceViewModel,
             editorViewModel: editorViewModel,
-            // editorScreen: const Center(child: Text('Editor')),
-            editorScreen: EditorScreen(viewModel: editorViewModel),
-            previewScreen: const Center(child: Text('Preview')),
           ),
         );
       },

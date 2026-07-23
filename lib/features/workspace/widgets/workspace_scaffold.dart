@@ -5,6 +5,7 @@ import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
+import 'package:atril/features/workspace/widgets/editor_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -23,19 +24,10 @@ enum _WorkspacePage {
 }
 
 class WorkspaceScaffold extends StatefulWidget {
-  const WorkspaceScaffold({
-    super.key,
-    required this.viewModel,
-    required this.editorViewModel,
-    required this.editorScreen,
-    required this.previewScreen,
-  });
+  const WorkspaceScaffold({super.key, required this.viewModel, required this.editorViewModel});
 
   final WorkspaceViewModel viewModel;
   final EditorViewModel editorViewModel;
-
-  final Widget editorScreen;
-  final Widget previewScreen;
 
   @override
   State<WorkspaceScaffold> createState() => _WorkspaceScaffoldState();
@@ -44,6 +36,8 @@ class WorkspaceScaffold extends StatefulWidget {
 class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
   late final PageController _pageController;
   var _selectedPage = _WorkspacePage.editor;
+
+  late final FocusNode _focusNode;
 
   final _filenameController = TextEditingController();
 
@@ -54,11 +48,15 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
 
     _pageController = PageController(initialPage: _selectedPage.index);
+
+    _focusNode = FocusNode();
   }
 
   @override
   void dispose() {
     _pageController.dispose();
+
+    _focusNode.dispose();
 
     _filenameController.dispose();
 
@@ -103,9 +101,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     };
   }
 
-  void _insertChord(bool isCompact) {
-    final result = widget.editorViewModel.insertChord();
-
+  void _handleInsertResult(SourceEditResult result, bool isCompact) {
     if (result case SourceEditRejected(:final reason)) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -115,6 +111,11 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
         ),
       );
     }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isPreview) return;
+      _focusNode.requestFocus();
+    });
   }
 
   @override
@@ -137,7 +138,11 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                         controller: _pageController,
                         physics: const NeverScrollableScrollPhysics(),
                         onPageChanged: _handlePageChanged,
-                        children: [widget.editorScreen, widget.previewScreen],
+                        children: [
+                          // const Center(child: Text('Editor')),
+                          EditorScreen(viewModel: widget.editorViewModel, focusNode: _focusNode),
+                          const Center(child: Text('Preview')),
+                        ],
                       ),
                     ),
                   ),
@@ -168,7 +173,10 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         FabMenuItem(
                                           icon: Symbols.music_note_2_rounded,
                                           label: 'Add chord',
-                                          onPressed: () => _insertChord(isCompact),
+                                          onPressed: () {
+                                            final result = widget.editorViewModel.insertChord();
+                                            _handleInsertResult(result, isCompact);
+                                          },
                                         ),
                                         FabMenuItem(
                                           icon: Symbols.data_object_rounded,
@@ -188,7 +196,10 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                           child: const Text('Add directive'),
                                         ),
                                         MenuItemButton(
-                                          onPressed: () => _insertChord(isCompact),
+                                          onPressed: () {
+                                            final result = widget.editorViewModel.insertChord();
+                                            _handleInsertResult(result, isCompact);
+                                          },
                                           leadingIcon: const Icon(Symbols.music_note_2_rounded),
                                           child: const Text('Add chord'),
                                         ),
