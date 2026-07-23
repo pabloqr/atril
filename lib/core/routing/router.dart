@@ -66,6 +66,7 @@ GoRouter router() => GoRouter(
           child: WorkspaceScaffold(
             key: ValueKey(filename),
             viewModel: workspaceViewModel,
+            editorViewModel: editorViewModel,
             // editorScreen: const Center(child: Text('Editor')),
             editorScreen: EditorScreen(viewModel: editorViewModel),
             previewScreen: const Center(child: Text('Preview')),

@@ -1,7 +1,9 @@
 import 'package:atril/core/routing/routes.dart';
+import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
+import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,11 +26,13 @@ class WorkspaceScaffold extends StatefulWidget {
   const WorkspaceScaffold({
     super.key,
     required this.viewModel,
+    required this.editorViewModel,
     required this.editorScreen,
     required this.previewScreen,
   });
 
   final WorkspaceViewModel viewModel;
+  final EditorViewModel editorViewModel;
 
   final Widget editorScreen;
   final Widget previewScreen;
@@ -89,6 +93,30 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     setState(() => _selectedPage = selectedTab);
   }
 
+  String _messageFor(SourceEditRejection reason) {
+    return switch (reason) {
+      SourceEditRejection.noSelection => 'Place the cursor where you want to perform this action.',
+      SourceEditRejection.invalidSelection => 'The current selection is no longer valid.',
+      SourceEditRejection.multilineSelection => 'This action cannot be applied across multiple lines.',
+      SourceEditRejection.directiveLine => 'Chords cannot be inserted in directive lines.',
+      SourceEditRejection.unsupportedDirective => 'This directive cannot be inserted here.',
+    };
+  }
+
+  void _insertChord(bool isCompact) {
+    final result = widget.editorViewModel.insertChord();
+
+    if (result case SourceEditRejected(:final reason)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(_messageFor(reason)),
+          margin: isCompact ? .fromLTRB(16.0, 16.0, 16.0, 96.0) : null,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -140,7 +168,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         FabMenuItem(
                                           icon: Symbols.music_note_2_rounded,
                                           label: 'Add chord',
-                                          onPressed: () {},
+                                          onPressed: () => _insertChord(isCompact),
                                         ),
                                         FabMenuItem(
                                           icon: Symbols.data_object_rounded,
@@ -160,7 +188,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                           child: const Text('Add directive'),
                                         ),
                                         MenuItemButton(
-                                          onPressed: () {},
+                                          onPressed: () => _insertChord(isCompact),
                                           leadingIcon: const Icon(Symbols.music_note_2_rounded),
                                           child: const Text('Add chord'),
                                         ),
