@@ -1,11 +1,16 @@
+import 'package:atril/core/extensions/string.dart';
 import 'package:atril/core/routing/routes.dart';
 import 'package:atril/data/services/song/source_editor.dart';
+import 'package:atril/domain/models/song.dart';
+import 'package:atril/features/core/extensions/directive_type.dart';
+import 'package:atril/features/core/utils/widget_utilities.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/editor_screen.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -181,18 +186,43 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         FabMenuItem(
                                           icon: Symbols.data_object_rounded,
                                           label: 'Add directive',
-                                          onPressed: () {},
+                                          onPressed: () async {
+                                            final selectedDirective = await showModalBottomSheet<DirectiveType>(
+                                              enableDrag: false,
+                                              isScrollControlled: true,
+                                              useSafeArea: true,
+                                              context: context,
+                                              builder: (context) => const _DirectivePickerSheet(),
+                                            );
+
+                                            if (selectedDirective == null) return;
+
+                                            final result = widget.editorViewModel.insertDirective(selectedDirective);
+                                            _handleInsertResult(result, isCompact);
+                                          },
                                         ),
                                       ],
                                     )
                                   : MenuAnchor(
                                       style: const MenuStyle(alignment: AlignmentDirectional.topStart),
-                                      alignmentOffset: Offset(-150.0, 0.0),
+                                      alignmentOffset: Offset(-182.0, 0.0),
                                       animated: true,
                                       menuChildren: [
-                                        MenuItemButton(
-                                          onPressed: () {},
+                                        SubmenuButton(
+                                          animated: true,
                                           leadingIcon: const Icon(Symbols.data_object_rounded),
+                                          menuChildren: List.generate(DirectiveType.values.length - 1, (index) {
+                                            final directive = DirectiveType.values[index];
+
+                                            return MenuItemButton(
+                                              onPressed: () {
+                                                final result = widget.editorViewModel.insertDirective(directive);
+                                                _handleInsertResult(result, isCompact);
+                                              },
+                                              leadingIcon: Icon(directive.icon),
+                                              child: Text(directive.name.toCapitalised()),
+                                            );
+                                          }),
                                           child: const Text('Add directive'),
                                         ),
                                         MenuItemButton(
@@ -407,6 +437,149 @@ class _ToolbarSlideTransition extends AnimatedWidget {
         excluding: isOutgoing,
         child: Transform.translate(offset: offset, child: child),
       ),
+    );
+  }
+}
+
+class _DirectivePickerSheet extends StatefulWidget {
+  const _DirectivePickerSheet();
+
+  @override
+  State<_DirectivePickerSheet> createState() => _DirectivePickerSheetState();
+}
+
+class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
+  static const _initialSize = 0.4;
+  static const _minSize = 0.25;
+  static const _maxSize = 1.0;
+  static const _snapSizes = [_minSize, _initialSize, _maxSize];
+  static const _flingVelocity = 500.0;
+  static const _snapTolerance = 0.001;
+
+  final _sheetController = DraggableScrollableController();
+
+  Future<void> _snapSheet({double velocity = 0.0}) async {
+    if (!_sheetController.isAttached) return;
+
+    final currentSize = _sheetController.size;
+    final targetSize = switch (velocity) {
+      < -_flingVelocity => _snapSizes.firstWhere((size) => size > currentSize, orElse: () => _maxSize),
+      > _flingVelocity => _snapSizes.lastWhere((size) => size < currentSize, orElse: () => _minSize),
+      _ => _snapSizes.reduce(
+        (closest, size) => (size - currentSize).abs() < (closest - currentSize).abs() ? size : closest,
+      ),
+    };
+
+    if ((targetSize - currentSize).abs() < _snapTolerance) return;
+
+    await _sheetController.animateTo(
+      targetSize,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  bool _handleListScrollEnd(ScrollEndNotification notification) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _snapSheet(velocity: notification.dragDetails?.primaryVelocity ?? 0.0);
+    });
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _sheetController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return DraggableScrollableSheet(
+          controller: _sheetController,
+          initialChildSize: _initialSize,
+          minChildSize: _minSize,
+          maxChildSize: _maxSize,
+          expand: false,
+          builder: (context, scrollController) => MouseRegion(
+            cursor: SystemMouseCursors.resizeUpDown,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onVerticalDragUpdate: (details) {
+                if (!_sheetController.isAttached || !constraints.hasBoundedHeight) return;
+
+                final targetSize = (_sheetController.size - details.delta.dy / constraints.maxHeight)
+                    .clamp(_minSize, _maxSize)
+                    .toDouble();
+                _sheetController.jumpTo(targetSize);
+              },
+              onVerticalDragEnd: (details) => _snapSheet(velocity: details.primaryVelocity ?? 0.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 32.0,
+                      height: 4.0,
+                      margin: const EdgeInsets.symmetric(vertical: 12.0),
+                      decoration: BoxDecoration(
+                        color: colorScheme.onSurfaceVariant,
+                        borderRadius: BorderRadius.circular(2.0),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                    child: Text('Add directive', style: textTheme.titleMedium),
+                  ),
+                  Expanded(
+                    child: ScrollConfiguration(
+                      behavior: ScrollConfiguration.of(context).copyWith(
+                        scrollbars: false,
+                        dragDevices: {...ScrollConfiguration.of(context).dragDevices, PointerDeviceKind.mouse},
+                      ),
+                      child: NotificationListener<ScrollEndNotification>(
+                        onNotification: _handleListScrollEnd,
+                        child: ListView.builder(
+                          controller: scrollController,
+                          itemCount: DirectiveType.values.length - 1,
+                          itemBuilder: (context, index) {
+                            final directive = DirectiveType.values[index];
+                            return Padding(
+                              padding: EdgeInsets.fromLTRB(
+                                16.0,
+                                index == 0 ? 0.0 : 1.0,
+                                16.0,
+                                index == DirectiveType.values.length - 2 ? 16.0 : 1.0,
+                              ),
+                              child: ListTile(
+                                leading: Icon(directive.icon),
+                                title: Text(directive.name.toCapitalised()),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: WidgetUtilities.calculateBorderRadius(
+                                    WidgetUtilities.calculateListWidgetSide(index, DirectiveType.values.length - 1),
+                                  ),
+                                ),
+                                tileColor: colorScheme.surfaceContainer,
+                                onTap: () => context.pop(directive),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }
