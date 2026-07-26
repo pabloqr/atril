@@ -3,11 +3,12 @@ import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:flutter/material.dart';
 
 class EditorScreen extends StatefulWidget {
-  const EditorScreen({super.key, required this.viewModel, required this.focusNode});
+  const EditorScreen({super.key, required this.viewModel, required this.focusNode, required this.historyController});
 
   final EditorViewModel viewModel;
 
   final FocusNode focusNode;
+  final UndoHistoryController historyController;
 
   @override
   State<EditorScreen> createState() => _EditorScreenState();
@@ -176,6 +177,7 @@ class _EditorScreenState extends State<EditorScreen> {
               child: TextField(
                 controller: _controller,
                 focusNode: widget.focusNode,
+                undoController: widget.historyController,
                 decoration: InputDecoration(
                   contentPadding: const EdgeInsets.all(28.0),
                   errorBorder: InputBorder.none,

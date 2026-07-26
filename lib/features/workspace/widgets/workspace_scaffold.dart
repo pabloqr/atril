@@ -43,6 +43,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
   var _selectedPage = _WorkspacePage.editor;
 
   late final FocusNode _focusNode;
+  late final UndoHistoryController _historyController;
 
   final _filenameController = TextEditingController();
 
@@ -55,6 +56,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     _pageController = PageController(initialPage: _selectedPage.index);
 
     _focusNode = FocusNode();
+    _historyController = UndoHistoryController();
   }
 
   @override
@@ -62,6 +64,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     _pageController.dispose();
 
     _focusNode.dispose();
+    _historyController.dispose();
 
     _filenameController.dispose();
 
@@ -145,7 +148,11 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                         onPageChanged: _handlePageChanged,
                         children: [
                           // const Center(child: Text('Editor')),
-                          EditorScreen(viewModel: widget.editorViewModel, focusNode: _focusNode),
+                          EditorScreen(
+                            viewModel: widget.editorViewModel,
+                            focusNode: _focusNode,
+                            historyController: _historyController,
+                          ),
                           const Center(child: Text('Preview')),
                         ],
                       ),
@@ -251,8 +258,16 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                   label: 'Switch view',
                                 ),
                                 ToolbarSeparator(),
-                                ToolbarIconButton(onPressed: () {}, icon: Symbols.undo_rounded, label: 'Undo'),
-                                ToolbarIconButton(onPressed: () {}, icon: Symbols.redo_rounded, label: 'Redo'),
+                                ToolbarIconButton(
+                                  onPressed: () => _historyController.undo(),
+                                  icon: Symbols.undo_rounded,
+                                  label: 'Undo',
+                                ),
+                                ToolbarIconButton(
+                                  onPressed: () => _historyController.redo(),
+                                  icon: Symbols.redo_rounded,
+                                  label: 'Redo',
+                                ),
                                 if (!_isPreview) ...[
                                   ToolbarCollapsibleItem(
                                     onPressed: () {},
