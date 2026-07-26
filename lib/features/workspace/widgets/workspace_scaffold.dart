@@ -110,25 +110,25 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
   }
 
   void _handleInsertResult(SourceEditResult result, bool isCompact) {
-    if (result case SourceEditRejected(:final reason)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(_messageFor(reason)),
-          margin: isCompact ? .fromLTRB(16.0, 16.0, 16.0, 96.0) : null,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _isPreview) return;
       _focusNode.requestFocus();
+
+      if (result case SourceEditRejected(:final reason)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(_messageFor(reason)),
+            margin: isCompact ? .fromLTRB(16.0, 16.0, 16.0, 96.0) : null,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     });
   }
 
-  void _selectNextIssue() {
+  void _selectNextIssue(bool isCompact) {
     final selected = widget.editorViewModel.selectNextIssue();
-    if (selected == -1) return;
+    if (!selected) return;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || _isPreview) return;
@@ -288,7 +288,9 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                       label: 'Transpose',
                                     ),
                                     ToolbarCollapsibleItem(
-                                      onPressed: widget.viewModel.issuesCount == 0 ? null : _selectNextIssue,
+                                      onPressed: widget.viewModel.issuesCount > 0
+                                          ? () => _selectNextIssue(isCompact)
+                                          : null,
                                       icon: Icons.spellcheck_rounded,
                                       badgeCount: widget.viewModel.issuesCount > 0
                                           ? widget.viewModel.issuesCount

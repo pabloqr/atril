@@ -1,6 +1,8 @@
 import 'package:atril/data/services/song/source_editor.dart';
+import 'package:atril/domain/models/song/parse_issue.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key, required this.viewModel, required this.focusNode, required this.historyController});
@@ -166,6 +168,9 @@ class _EditorScreenState extends State<EditorScreen> with AutomaticKeepAliveClie
         ? '$_selectedCharacterCount of $_characterCount characters'
         : '$_characterCount characters';
 
+    final issue = widget.viewModel.activeIssue;
+    final issueNumber = widget.viewModel.activeIssueNumber;
+
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeInOutCubicEmphasized,
@@ -216,6 +221,37 @@ class _EditorScreenState extends State<EditorScreen> with AutomaticKeepAliveClie
                   Text('Line $_line · Column $_column'),
                   SizedBox(height: 16.0, child: const VerticalDivider(width: 16.0, thickness: 1.0)),
                   Text(charsText),
+                  if (issue != null) ...[
+                    const SizedBox(height: 16.0, child: VerticalDivider(width: 16.0, thickness: 1.0)),
+                    Row(
+                      mainAxisAlignment: .start,
+                      mainAxisSize: .min,
+                      crossAxisAlignment: .start,
+                      spacing: 8.0,
+                      children: [
+                        Icon(
+                          issue.severity == .warning
+                              ? Symbols.warning_amber_rounded
+                              : Symbols.error_outline_rounded,
+                          size: 18.0,
+                          color: issue.severity == .warning
+                              ? colorScheme.tertiary
+                              : colorScheme.error,
+                        ),
+                        Flexible(
+                          child: Text(
+                            '$issueNumber of ${widget.viewModel.issuesCount}'
+                            ' · ${issue.code.message}: ${issue.message}',
+                            style: textTheme.labelMedium?.copyWith(
+                              color: issue.severity == .warning
+                                  ? colorScheme.tertiary
+                                  : colorScheme.error,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),

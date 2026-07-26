@@ -21,6 +21,18 @@ final class EditorViewModel extends ChangeNotifier {
 
   String get source => _workspaceViewModel.source;
 
+  ParseIssue? get activeIssue {
+    final index = _activeIssueIndex;
+    final issues = _workspaceViewModel.song.issues;
+
+    if (index == null || index < 0 || index >= issues.length) return null;
+    return issues[index];
+  }
+
+  int? get activeIssueNumber => _activeIssueIndex == null ? null : _activeIssueIndex! + 1;
+
+  int get issuesCount => _workspaceViewModel.issuesCount;
+
   Selection get selection => _selection;
 
   @override
@@ -55,12 +67,12 @@ final class EditorViewModel extends ChangeNotifier {
     return result;
   }
 
-  int selectNextIssue() {
+  bool selectNextIssue() {
     final issues = _workspaceViewModel.song.issues;
 
     if (issues.isEmpty) {
       _activeIssueIndex = null;
-      return -1;
+      return false;
     }
 
     final activeIndex = _activeIssueIndex;
@@ -71,7 +83,8 @@ final class EditorViewModel extends ChangeNotifier {
 
     _activeIssueIndex = nextIndex;
 
-    final location = issues[nextIndex].location;
+    final issue = issues[nextIndex];
+    final location = issue.location;
     final sourceLength = source.length;
 
     final start = location.sourceOffset.clamp(0, sourceLength);
@@ -80,7 +93,7 @@ final class EditorViewModel extends ChangeNotifier {
     _selection = start == end ? PositionSelection(start) : RangeSelection(start, end);
 
     notifyListeners();
-    return nextIndex;
+    return true;
   }
 
   void _apply(String source, Selection selection, [bool notify = true]) {
