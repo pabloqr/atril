@@ -14,7 +14,7 @@ class EditorScreen extends StatefulWidget {
   State<EditorScreen> createState() => _EditorScreenState();
 }
 
-class _EditorScreenState extends State<EditorScreen> {
+class _EditorScreenState extends State<EditorScreen> with AutomaticKeepAliveClientMixin {
   late final TextEditingController _controller;
 
   bool _updatingControllerFromViewModel = false;
@@ -23,6 +23,9 @@ class _EditorScreenState extends State<EditorScreen> {
   int _column = 0;
   int _selectedCharacterCount = 0;
   int _characterCount = 0;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -154,6 +157,8 @@ class _EditorScreenState extends State<EditorScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 

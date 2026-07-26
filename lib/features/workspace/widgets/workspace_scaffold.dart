@@ -259,12 +259,12 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                 ),
                                 ToolbarSeparator(),
                                 ToolbarIconButton(
-                                  onPressed: () => _historyController.undo(),
+                                  onPressed: () => _isPreview ? null : _historyController.undo(),
                                   icon: Symbols.undo_rounded,
                                   label: 'Undo',
                                 ),
                                 ToolbarIconButton(
-                                  onPressed: () => _historyController.redo(),
+                                  onPressed: () => _isPreview ? null : _historyController.redo(),
                                   icon: Symbols.redo_rounded,
                                   label: 'Redo',
                                 ),
