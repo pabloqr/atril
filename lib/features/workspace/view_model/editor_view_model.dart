@@ -15,6 +15,8 @@ final class EditorViewModel extends ChangeNotifier {
   bool _updatingWorkspace = false;
   String _knownSource;
 
+  int? _activeIssueIndex;
+
   Selection _selection = NoSelection();
 
   String get source => _workspaceViewModel.source;
@@ -29,6 +31,7 @@ final class EditorViewModel extends ChangeNotifier {
   }
 
   void update(String source, Selection selection) {
+    _activeIssueIndex = null;
     _apply(source, selection, false);
   }
 
@@ -52,9 +55,39 @@ final class EditorViewModel extends ChangeNotifier {
     return result;
   }
 
+  int selectNextIssue() {
+    final issues = _workspaceViewModel.song.issues;
+
+    if (issues.isEmpty) {
+      _activeIssueIndex = null;
+      return -1;
+    }
+
+    final activeIndex = _activeIssueIndex;
+
+    final nextIndex = activeIndex != null && activeIndex >= 0 && activeIndex < issues.length
+        ? (activeIndex + 1) % issues.length
+        : _findNextIssueIndex(issues);
+
+    _activeIssueIndex = nextIndex;
+
+    final location = issues[nextIndex].location;
+    final sourceLength = source.length;
+
+    final start = location.sourceOffset.clamp(0, sourceLength);
+    final end = (location.sourceOffset + location.length).clamp(start, sourceLength);
+
+    _selection = start == end ? PositionSelection(start) : RangeSelection(start, end);
+
+    notifyListeners();
+    return nextIndex;
+  }
+
   void _apply(String source, Selection selection, [bool notify = true]) {
     _knownSource = source;
     _selection = selection;
+
+    _activeIssueIndex = null;
 
     _updatingWorkspace = true;
     try {
@@ -74,8 +107,50 @@ final class EditorViewModel extends ChangeNotifier {
     if (source != _knownSource) {
       _knownSource = source;
       _selection = const NoSelection();
+      _activeIssueIndex = null;
     }
 
     notifyListeners();
+  }
+
+  int _findNextIssueIndex(List<ParseIssue> issues) {
+    if (_selection case NoSelection()) {
+      return 0;
+    }
+
+    final int anchor;
+    int? selectedStart;
+    int? selectedEnd;
+
+    switch (_selection) {
+      case PositionSelection(:final position):
+        anchor = position;
+
+      case RangeSelection(:final start, :final end):
+        selectedStart = start;
+        selectedEnd = end;
+        anchor = end;
+
+      case NoSelection():
+        return 0;
+    }
+
+    int? containingIndex;
+    int? followingIndex;
+
+    for (var index = 0; index < issues.length; index++) {
+      final location = issues[index].location;
+      final issueStart = location.sourceOffset;
+      final issueEnd = issueStart + location.length;
+
+      if (selectedStart == issueStart && selectedEnd == issueEnd) return (index + 1) % issues.length;
+
+      if (containingIndex == null && issueStart <= anchor && anchor < issueEnd) containingIndex = index;
+      if (followingIndex == null && issueStart >= anchor) followingIndex = index;
+
+      if (issueStart > anchor) break;
+    }
+
+    return containingIndex ?? followingIndex ?? 0;
   }
 }

@@ -126,6 +126,16 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
     });
   }
 
+  void _selectNextIssue() {
+    final selected = widget.editorViewModel.selectNextIssue();
+    if (selected == -1) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isPreview) return;
+      _focusNode.requestFocus();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -278,9 +288,11 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                       label: 'Transpose',
                                     ),
                                     ToolbarCollapsibleItem(
-                                      onPressed: () {},
+                                      onPressed: widget.viewModel.issuesCount == 0 ? null : _selectNextIssue,
                                       icon: Icons.spellcheck_rounded,
-                                      badgeCount: widget.viewModel.issuesCount > 0 ? widget.viewModel.issuesCount : null,
+                                      badgeCount: widget.viewModel.issuesCount > 0
+                                          ? widget.viewModel.issuesCount
+                                          : null,
                                       label: 'Issues',
                                     ),
                                   ] else ...[
