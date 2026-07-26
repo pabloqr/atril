@@ -174,10 +174,9 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                               ? const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0)
                               : const EdgeInsets.fromLTRB(0.0, 16.0, 24.0, 16.0),
                           child: SafeArea(
-                            child: Toolbar(
-                              direction: isCompact ? Axis.horizontal : Axis.vertical,
-                              showFab: !_isPreview,
-                              floatingActionButton: isCompact
+                            child: ListenableBuilder(
+                              listenable: widget.viewModel,
+                              child: isCompact
                                   ? FabMenu(
                                       fabTooltip: 'Add musical component',
                                       fabIcon: Symbols.music_note_add_rounded,
@@ -247,51 +246,57 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         child: const Icon(Symbols.music_note_add_rounded),
                                       ),
                                     ),
-                              children: [
-                                ToolbarIconButton(
-                                  key: ValueKey(_isPreview),
-                                  animate: true,
-                                  onPressed: _togglePage,
-                                  icon: Symbols.visibility_rounded,
-                                  selectedIcon: Symbols.visibility_off_rounded,
-                                  isSelected: _isPreview,
-                                  label: 'Switch view',
-                                ),
-                                ToolbarSeparator(),
-                                ToolbarIconButton(
-                                  onPressed: () => _isPreview ? null : _historyController.undo(),
-                                  icon: Symbols.undo_rounded,
-                                  label: 'Undo',
-                                ),
-                                ToolbarIconButton(
-                                  onPressed: () => _isPreview ? null : _historyController.redo(),
-                                  icon: Symbols.redo_rounded,
-                                  label: 'Redo',
-                                ),
-                                if (!_isPreview) ...[
-                                  ToolbarCollapsibleItem(
-                                    onPressed: () {},
-                                    icon: Icons.swap_vert_rounded,
-                                    label: 'Transpose',
+                              builder: (context, child) => Toolbar(
+                                direction: isCompact ? Axis.horizontal : Axis.vertical,
+                                showFab: !_isPreview,
+                                floatingActionButton: child,
+                                children: [
+                                  ToolbarIconButton(
+                                    key: ValueKey(_isPreview),
+                                    animate: true,
+                                    onPressed: _togglePage,
+                                    icon: Symbols.visibility_rounded,
+                                    selectedIcon: Symbols.visibility_off_rounded,
+                                    isSelected: _isPreview,
+                                    label: 'Switch view',
                                   ),
-                                  ToolbarCollapsibleItem(
-                                    onPressed: () {},
-                                    icon: Icons.spellcheck_rounded,
-                                    label: 'Issues',
+                                  ToolbarSeparator(),
+                                  ToolbarIconButton(
+                                    onPressed: () => _isPreview ? null : _historyController.undo(),
+                                    icon: Symbols.undo_rounded,
+                                    label: 'Undo',
                                   ),
-                                ] else ...[
-                                  ToolbarCollapsibleItem(
-                                    onPressed: () {},
-                                    icon: Icons.swap_vert_rounded,
-                                    label: 'Semitones',
+                                  ToolbarIconButton(
+                                    onPressed: () => _isPreview ? null : _historyController.redo(),
+                                    icon: Symbols.redo_rounded,
+                                    label: 'Redo',
                                   ),
-                                  ToolbarCollapsibleItem(
-                                    onPressed: () {},
-                                    icon: Symbols.discover_tune_rounded,
-                                    label: 'Advanced options',
-                                  ),
+                                  if (!_isPreview) ...[
+                                    ToolbarCollapsibleItem(
+                                      onPressed: () {},
+                                      icon: Icons.swap_vert_rounded,
+                                      label: 'Transpose',
+                                    ),
+                                    ToolbarCollapsibleItem(
+                                      onPressed: () {},
+                                      icon: Icons.spellcheck_rounded,
+                                      badgeCount: widget.viewModel.issuesCount > 0 ? widget.viewModel.issuesCount : null,
+                                      label: 'Issues',
+                                    ),
+                                  ] else ...[
+                                    ToolbarCollapsibleItem(
+                                      onPressed: () {},
+                                      icon: Icons.swap_vert_rounded,
+                                      label: 'Semitones',
+                                    ),
+                                    ToolbarCollapsibleItem(
+                                      onPressed: () {},
+                                      icon: Symbols.discover_tune_rounded,
+                                      label: 'Advanced options',
+                                    ),
+                                  ],
                                 ],
-                              ],
+                              ),
                             ),
                           ),
                         ),

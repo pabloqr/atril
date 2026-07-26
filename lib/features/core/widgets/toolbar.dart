@@ -26,6 +26,7 @@ class ToolbarIconButton extends ToolbarItem {
     required this.onPressed,
     required this.icon,
     this.selectedIcon,
+    this.badgeCount,
     this.isSelected = false,
     required this.label,
   });
@@ -36,6 +37,8 @@ class ToolbarIconButton extends ToolbarItem {
 
   final IconData icon;
   final IconData? selectedIcon;
+
+  final int? badgeCount;
 
   final bool isSelected;
 
@@ -49,6 +52,7 @@ class ToolbarCollapsibleItem extends ToolbarIconButton {
     required super.onPressed,
     required super.icon,
     super.selectedIcon,
+    super.badgeCount,
     super.isSelected = false,
     required super.label,
   });
@@ -88,6 +92,8 @@ class Toolbar extends StatelessWidget {
   static Widget _buildIconButton(BuildContext context, ToolbarIconButton item) {
     final colorScheme = Theme.of(context).colorScheme;
 
+    final icon = Icon(item.icon);
+
     final button = IconButton(
       key: item.key,
       style: IconButton.styleFrom(
@@ -98,7 +104,7 @@ class Toolbar extends StatelessWidget {
       isSelected: item.isSelected,
       onPressed: item.onPressed,
       tooltip: item.label,
-      icon: Icon(item.icon),
+      icon: item.badgeCount != null ? Badge.count(count: item.badgeCount!, child: icon) : icon,
       selectedIcon: Icon(item.selectedIcon ?? item.icon),
     );
 
@@ -360,31 +366,54 @@ class _OverflowMenuButton extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textDirection = Directionality.of(context);
 
-    final sign = textDirection == TextDirection.ltr ? -1.0 : 1.0;
+    final sign = textDirection == TextDirection.ltr ? 1.0 : -1.0;
 
-    final dx = (direction == Axis.horizontal ? 80.0 : 142.0) * sign;
+    final dx = (direction == Axis.horizontal ? 0.0 : 56.0) * sign;
     final dy = direction == Axis.horizontal ? 16.0 : -88.0;
 
-    return MenuAnchor(
-      alignmentOffset: Offset(dx, dy),
-      animated: true,
-      menuChildren: [
-        for (final item in items)
-          MenuItemButton(onPressed: item.onPressed, leadingIcon: Icon(item.icon), child: Text(item.label)),
-      ],
-      builder: (context, controller, child) => AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: IconButton(
-          key: ValueKey(controller.isOpen),
-          style: IconButton.styleFrom(
-            backgroundColor: controller.isOpen ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
-            foregroundColor: controller.isOpen ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-            // fixedSize: Size.square(48.0),
-          ),
-          onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-          tooltip: 'More actions',
-          icon: const Icon(Icons.more_vert_rounded),
-        ),
+    var hasBadge = false;
+
+    return Directionality(
+      textDirection: TextDirection.values[(textDirection.index + 1) % TextDirection.values.length],
+      child: MenuAnchor(
+        alignmentOffset: Offset(dx, dy),
+        animated: true,
+        menuChildren: List.generate(items.length, (index) {
+          final item = items[index];
+
+          hasBadge = hasBadge || item.badgeCount != null;
+
+          return Directionality(
+            textDirection: textDirection,
+            child: MenuItemButton(
+              onPressed: item.onPressed,
+              leadingIcon: Icon(item.icon),
+              trailingIcon: item.badgeCount != null ? Badge.count(count: item.badgeCount!) : null,
+              child: Text(item.label),
+            ),
+          );
+        }),
+        builder: (context, controller, child) {
+          final icon = const Icon(Icons.more_vert_rounded);
+
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Directionality(
+              textDirection: textDirection,
+              child: IconButton(
+                key: ValueKey(controller.isOpen),
+                style: IconButton.styleFrom(
+                  backgroundColor: controller.isOpen ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
+                  foregroundColor: controller.isOpen ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
+                  // fixedSize: Size.square(48.0),
+                ),
+                onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                tooltip: 'More actions',
+                icon: hasBadge ? Badge(child: icon) : icon,
+              ),
+            ),
+          );
+        },
       ),
     );
   }

@@ -42,6 +42,8 @@ final class WorkspaceViewModel extends ChangeNotifier {
     return _cachedSong!;
   }
 
+  int get issuesCount => song.issues.length;
+
   set filename(String filename) {
     if (filename == _filename) return;
 
