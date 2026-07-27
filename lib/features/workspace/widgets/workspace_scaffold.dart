@@ -151,7 +151,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                 children: [
                   SafeArea(
                     child: Padding(
-                      padding: EdgeInsets.only(bottom: isCompact ? 88.0 : 0.0),
+                      padding: .only(bottom: isCompact ? 88.0 : 0.0),
                       child: PageView(
                         controller: _pageController,
                         physics: const NeverScrollableScrollPhysics(),
@@ -178,11 +178,11 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                       ),
                       child: Align(
                         key: ValueKey(isCompact),
-                        alignment: isCompact ? Alignment.bottomCenter : Alignment.centerRight,
+                        alignment: isCompact ? .bottomCenter : .centerRight,
                         child: Padding(
                           padding: isCompact
-                              ? const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 24.0)
-                              : const EdgeInsets.fromLTRB(0.0, 16.0, 24.0, 16.0),
+                              ? const .fromLTRB(16.0, 0.0, 16.0, 24.0)
+                              : const .fromLTRB(0.0, 16.0, 24.0, 16.0),
                           child: SafeArea(
                             child: ListenableBuilder(
                               listenable: widget.viewModel,
@@ -220,7 +220,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                       ],
                                     )
                                   : MenuAnchor(
-                                      style: const MenuStyle(alignment: AlignmentDirectional.topStart),
+                                      style: const MenuStyle(alignment: .topStart),
                                       alignmentOffset: Offset(-182.0, 0.0),
                                       animated: true,
                                       menuChildren: [
@@ -257,7 +257,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                       ),
                                     ),
                               builder: (context, child) => Toolbar(
-                                direction: isCompact ? Axis.horizontal : Axis.vertical,
+                                direction: isCompact ? .horizontal : .vertical,
                                 showFab: !_isPreview,
                                 floatingActionButton: child,
                                 children: [
@@ -338,7 +338,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
 
     return AppBar(
       leading: IconButton(
-        style: IconButton.styleFrom(tapTargetSize: MaterialTapTargetSize.padded),
+        style: IconButton.styleFrom(tapTargetSize: .padded),
         onPressed: _closeWorkspace,
         icon: const Icon(Symbols.close_rounded),
       ),
@@ -355,7 +355,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
         ),
         const SizedBox(width: 4.0),
         MenuAnchor(
-          style: const MenuStyle(alignment: AlignmentDirectional.bottomStart),
+          style: const MenuStyle(alignment: .bottomStart),
           alignmentOffset: Offset(menuOffsetX, 4.0),
           consumeOutsideTap: true,
           animated: true,
@@ -373,7 +373,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                   context,
                   title: const Text('Rename song'),
                   content: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisSize: .min,
                     spacing: 16.0,
                     children: [
                       TextField(
@@ -543,7 +543,7 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
           builder: (context, scrollController) => MouseRegion(
             cursor: SystemMouseCursors.resizeUpDown,
             child: GestureDetector(
-              behavior: HitTestBehavior.opaque,
+              behavior: .opaque,
               onVerticalDragUpdate: (details) {
                 if (!_sheetController.isAttached || !constraints.hasBoundedHeight) return;
 
@@ -554,21 +554,21 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
               },
               onVerticalDragEnd: (details) => _snapSheet(velocity: details.primaryVelocity ?? 0.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: .stretch,
                 children: [
                   Center(
                     child: Container(
                       width: 32.0,
                       height: 4.0,
-                      margin: const EdgeInsets.symmetric(vertical: 12.0),
+                      margin: const .symmetric(vertical: 12.0),
                       decoration: BoxDecoration(
                         color: colorScheme.onSurfaceVariant,
-                        borderRadius: BorderRadius.circular(2.0),
+                        borderRadius: .circular(2.0),
                       ),
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
+                    padding: const .fromLTRB(16.0, 0.0, 16.0, 16.0),
                     child: Text('Add directive', style: textTheme.titleMedium),
                   ),
                   Expanded(
@@ -584,23 +584,34 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
                           itemCount: DirectiveType.values.length - 1,
                           itemBuilder: (context, index) {
                             final directive = DirectiveType.values[index];
-                            return Padding(
-                              padding: EdgeInsets.fromLTRB(
+                            return Card.filled(
+                              margin: .fromLTRB(
                                 16.0,
                                 index == 0 ? 0.0 : 1.0,
                                 16.0,
                                 index == DirectiveType.values.length - 2 ? 16.0 : 1.0,
                               ),
-                              child: ListTile(
-                                leading: Icon(directive.icon),
-                                title: Text(directive.name.toCapitalised()),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: WidgetUtilities.calculateBorderRadius(
-                                    WidgetUtilities.calculateListWidgetSide(index, DirectiveType.values.length - 1),
+                              color: colorScheme.surfaceContainer,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: WidgetUtilities.calculateBorderRadius(
+                                  WidgetUtilities.calculateListWidgetSide(index, DirectiveType.values.length - 1),
+                                ),
+                              ),
+                              child: InkWell(
+                                onTap: () => context.pop(directive),
+                                child: Padding(
+                                  padding: const .all(16.0),
+                                  child: Row(
+                                    spacing: 12.0,
+                                    children: [
+                                      Icon(directive.icon),
+                                      Text(
+                                        directive.name.toCapitalised(),
+                                        style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                tileColor: colorScheme.surfaceContainer,
-                                onTap: () => context.pop(directive),
                               ),
                             );
                           },
