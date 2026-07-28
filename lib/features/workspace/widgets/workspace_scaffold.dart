@@ -7,6 +7,7 @@ import 'package:atril/features/core/utils/widget_utilities.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
+import 'package:atril/features/core/widgets/widget_anchor.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/editor_screen.dart';
@@ -186,131 +187,151 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                           child: SafeArea(
                             child: ListenableBuilder(
                               listenable: widget.viewModel,
-                              child: isCompact
-                                  ? FabMenu(
-                                      fabTooltip: 'Add musical component',
-                                      fabIcon: Symbols.music_note_add_rounded,
-                                      items: [
-                                        FabMenuItem(
-                                          icon: Symbols.music_note_2_rounded,
-                                          label: 'Add chord',
-                                          onPressed: () {
-                                            final result = widget.editorViewModel.insertChord();
-                                            _handleInsertResult(result, isCompact);
-                                          },
-                                        ),
-                                        FabMenuItem(
-                                          icon: Symbols.data_object_rounded,
-                                          label: 'Add directive',
-                                          onPressed: () async {
-                                            final selectedDirective = await showModalBottomSheet<DirectiveType>(
-                                              enableDrag: false,
-                                              isScrollControlled: true,
-                                              useSafeArea: true,
-                                              context: context,
-                                              builder: (context) => const _DirectivePickerSheet(),
-                                            );
+                              builder: (context, child) {
+                                final dx = isCompact ? -72.0 : -4.0;
+                                final dy = isCompact ? -4.0 : 236.0;
 
-                                            if (selectedDirective == null) return;
-
-                                            final result = widget.editorViewModel.insertDirective(selectedDirective);
-                                            _handleInsertResult(result, isCompact);
-                                          },
-                                        ),
-                                      ],
-                                    )
-                                  : MenuAnchor(
-                                      style: const MenuStyle(alignment: .topStart),
-                                      alignmentOffset: Offset(-182.0, 0.0),
-                                      animated: true,
-                                      menuChildren: [
-                                        SubmenuButton(
-                                          animated: true,
-                                          leadingIcon: const Icon(Symbols.data_object_rounded),
-                                          menuChildren: List.generate(DirectiveType.values.length - 1, (index) {
-                                            final directive = DirectiveType.values[index];
-
-                                            return MenuItemButton(
+                                return WidgetAnchor(
+                                  targetAlignment: isCompact ? .topRight : .topLeft,
+                                  followerAlignment: isCompact ? .bottomRight : .bottomRight,
+                                  alignmentOffset: Offset(dx, dy),
+                                  child: isCompact
+                                      ? FabMenu(
+                                          fabTooltip: 'Add musical component',
+                                          fabIcon: Symbols.music_note_add_rounded,
+                                          items: [
+                                            FabMenuItem(
+                                              icon: Symbols.music_note_2_rounded,
+                                              label: 'Add chord',
                                               onPressed: () {
-                                                final result = widget.editorViewModel.insertDirective(directive);
+                                                final result = widget.editorViewModel.insertChord();
                                                 _handleInsertResult(result, isCompact);
                                               },
-                                              leadingIcon: Icon(directive.icon),
-                                              child: Text(directive.name.toCapitalised()),
-                                            );
-                                          }),
-                                          child: const Text('Add directive'),
+                                            ),
+                                            FabMenuItem(
+                                              icon: Symbols.data_object_rounded,
+                                              label: 'Add directive',
+                                              onPressed: () async {
+                                                final selectedDirective = await showModalBottomSheet<DirectiveType>(
+                                                  enableDrag: false,
+                                                  isScrollControlled: true,
+                                                  useSafeArea: true,
+                                                  context: context,
+                                                  builder: (context) => const _DirectivePickerSheet(),
+                                                );
+
+                                                if (selectedDirective == null) return;
+
+                                                final result = widget.editorViewModel.insertDirective(
+                                                  selectedDirective,
+                                                );
+                                                _handleInsertResult(result, isCompact);
+                                              },
+                                            ),
+                                          ],
+                                        )
+                                      : MenuAnchor(
+                                          style: const MenuStyle(alignment: .topStart),
+                                          alignmentOffset: Offset(-182.0, 0.0),
+                                          animated: true,
+                                          menuChildren: [
+                                            SubmenuButton(
+                                              animated: true,
+                                              leadingIcon: const Icon(Symbols.data_object_rounded),
+                                              menuChildren: List.generate(DirectiveType.values.length - 1, (index) {
+                                                final directive = DirectiveType.values[index];
+
+                                                return MenuItemButton(
+                                                  onPressed: () {
+                                                    final result = widget.editorViewModel.insertDirective(directive);
+                                                    _handleInsertResult(result, isCompact);
+                                                  },
+                                                  leadingIcon: Icon(directive.icon),
+                                                  child: Text(directive.name.toCapitalised()),
+                                                );
+                                              }),
+                                              child: const Text('Add directive'),
+                                            ),
+                                            MenuItemButton(
+                                              onPressed: () {
+                                                final result = widget.editorViewModel.insertChord();
+                                                _handleInsertResult(result, isCompact);
+                                              },
+                                              leadingIcon: const Icon(Symbols.music_note_2_rounded),
+                                              child: const Text('Add chord'),
+                                            ),
+                                          ],
+                                          builder: (context, controller, _) => FloatingActionButton(
+                                            onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                                            tooltip: 'Add musical component',
+                                            child: const Icon(Symbols.music_note_add_rounded),
+                                          ),
                                         ),
-                                        MenuItemButton(
-                                          onPressed: () {
-                                            final result = widget.editorViewModel.insertChord();
-                                            _handleInsertResult(result, isCompact);
-                                          },
-                                          leadingIcon: const Icon(Symbols.music_note_2_rounded),
-                                          child: const Text('Add chord'),
+
+                                  widgetBuilder: (context) => _buildTransposeWidgetAnchor(context, isCompact),
+                                  builder: (context, controller, child) => Toolbar(
+                                    direction: isCompact ? .horizontal : .vertical,
+                                    showFab: !_isPreview,
+                                    floatingActionButton: child,
+                                    children: [
+                                      ToolbarIconButton(
+                                        key: ValueKey(_isPreview),
+                                        animate: true,
+                                        onPressed: _togglePage,
+                                        icon: Symbols.visibility_rounded,
+                                        selectedIcon: Symbols.visibility_off_rounded,
+                                        isSelected: _isPreview,
+                                        label: 'Switch view',
+                                      ),
+                                      ToolbarSeparator(),
+                                      ToolbarIconButton(
+                                        onPressed: () => _isPreview ? null : _historyController.undo(),
+                                        icon: Symbols.undo_rounded,
+                                        label: 'Undo',
+                                      ),
+                                      ToolbarIconButton(
+                                        onPressed: () => _isPreview ? null : _historyController.redo(),
+                                        icon: Symbols.redo_rounded,
+                                        label: 'Redo',
+                                      ),
+                                      if (!_isPreview) ...[
+                                        ToolbarCollapsibleItem(
+                                          key: ValueKey(('transpose', controller.isOpen)),
+                                          animate: true,
+                                          onPressed: controller.toggle,
+                                          icon: Icons.swap_vert_rounded,
+                                          isSelected: controller.isOpen,
+                                          label: 'Transpose',
+                                        ),
+                                        ToolbarCollapsibleItem(
+                                          onPressed: widget.viewModel.issuesCount > 0
+                                              ? () => _selectNextIssue(isCompact)
+                                              : null,
+                                          icon: Icons.spellcheck_rounded,
+                                          badgeCount: widget.viewModel.issuesCount > 0
+                                              ? widget.viewModel.issuesCount
+                                              : null,
+                                          label: 'Issues',
+                                        ),
+                                      ] else ...[
+                                        ToolbarCollapsibleItem(
+                                          key: ValueKey(('semitones', controller.isOpen)),
+                                          animate: true,
+                                          onPressed: controller.toggle,
+                                          icon: Icons.swap_vert_rounded,
+                                          isSelected: controller.isOpen,
+                                          label: 'Semitones',
+                                        ),
+                                        ToolbarCollapsibleItem(
+                                          onPressed: () {},
+                                          icon: Symbols.discover_tune_rounded,
+                                          label: 'Advanced options',
                                         ),
                                       ],
-                                      builder: (context, controller, _) => FloatingActionButton(
-                                        onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-                                        tooltip: 'Add musical component',
-                                        child: const Icon(Symbols.music_note_add_rounded),
-                                      ),
-                                    ),
-                              builder: (context, child) => Toolbar(
-                                direction: isCompact ? .horizontal : .vertical,
-                                showFab: !_isPreview,
-                                floatingActionButton: child,
-                                children: [
-                                  ToolbarIconButton(
-                                    key: ValueKey(_isPreview),
-                                    animate: true,
-                                    onPressed: _togglePage,
-                                    icon: Symbols.visibility_rounded,
-                                    selectedIcon: Symbols.visibility_off_rounded,
-                                    isSelected: _isPreview,
-                                    label: 'Switch view',
+                                    ],
                                   ),
-                                  ToolbarSeparator(),
-                                  ToolbarIconButton(
-                                    onPressed: () => _isPreview ? null : _historyController.undo(),
-                                    icon: Symbols.undo_rounded,
-                                    label: 'Undo',
-                                  ),
-                                  ToolbarIconButton(
-                                    onPressed: () => _isPreview ? null : _historyController.redo(),
-                                    icon: Symbols.redo_rounded,
-                                    label: 'Redo',
-                                  ),
-                                  if (!_isPreview) ...[
-                                    ToolbarCollapsibleItem(
-                                      onPressed: () {},
-                                      icon: Icons.swap_vert_rounded,
-                                      label: 'Transpose',
-                                    ),
-                                    ToolbarCollapsibleItem(
-                                      onPressed: widget.viewModel.issuesCount > 0
-                                          ? () => _selectNextIssue(isCompact)
-                                          : null,
-                                      icon: Icons.spellcheck_rounded,
-                                      badgeCount: widget.viewModel.issuesCount > 0
-                                          ? widget.viewModel.issuesCount
-                                          : null,
-                                      label: 'Issues',
-                                    ),
-                                  ] else ...[
-                                    ToolbarCollapsibleItem(
-                                      onPressed: () {},
-                                      icon: Icons.swap_vert_rounded,
-                                      label: 'Semitones',
-                                    ),
-                                    ToolbarCollapsibleItem(
-                                      onPressed: () {},
-                                      icon: Symbols.discover_tune_rounded,
-                                      label: 'Advanced options',
-                                    ),
-                                  ],
-                                ],
-                              ),
+                                );
+                              },
                             ),
                           ),
                         ),
@@ -444,6 +465,27 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
       ],
     );
   }
+
+  Widget _buildTransposeWidgetAnchor(BuildContext context, bool isCompact) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: colorScheme.surfaceContainer,
+      elevation: 3.0,
+      borderRadius: BorderRadius.circular(16.0),
+      clipBehavior: Clip.antiAlias,
+      child: Padding(
+        padding: const .all(4.0),
+        child: _TransposeControls(
+          direction: isCompact ? .horizontal : .vertical,
+          semitones: 0,
+          onTransposeDownPressed: () {},
+          onTransposeUpPressed: () {},
+          onResetPressed: () {},
+        ),
+      ),
+    );
+  }
 }
 
 class _ToolbarSlideTransition extends AnimatedWidget {
@@ -561,10 +603,7 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
                       width: 32.0,
                       height: 4.0,
                       margin: const .symmetric(vertical: 12.0),
-                      decoration: BoxDecoration(
-                        color: colorScheme.onSurfaceVariant,
-                        borderRadius: .circular(2.0),
-                      ),
+                      decoration: BoxDecoration(color: colorScheme.onSurfaceVariant, borderRadius: .circular(2.0)),
                     ),
                   ),
                   Padding(
@@ -625,6 +664,79 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
           ),
         );
       },
+    );
+  }
+}
+
+class _TransposeControls extends StatelessWidget {
+  const _TransposeControls({
+    required this.direction,
+    required this.onTransposeDownPressed,
+    required this.onTransposeUpPressed,
+    required this.onResetPressed,
+    required this.semitones,
+  });
+
+  final Axis direction;
+
+  final VoidCallback onTransposeDownPressed;
+  final VoidCallback onTransposeUpPressed;
+  final VoidCallback onResetPressed;
+
+  final int semitones;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Flex(
+      direction: direction,
+      mainAxisSize: .min,
+      spacing: 4.0,
+      children: [
+        if (direction == .horizontal)
+          IconButton.filledTonal(
+            style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.narrow),
+            onPressed: onTransposeDownPressed,
+            icon: const Icon(Symbols.remove_rounded),
+          )
+        else
+          IconButton.filledTonal(
+            style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.wide),
+            onPressed: onTransposeUpPressed,
+            icon: const Icon(Symbols.add_rounded),
+          ),
+        Container(
+          padding: const .all(8.0),
+          decoration: BoxDecoration(color: colorScheme.surfaceContainerHighest, borderRadius: .circular(12.0)),
+          child: Column(
+            mainAxisSize: .min,
+            children: [
+              Text('$semitones', style: textTheme.bodyLarge),
+              Text('semitones', style: textTheme.labelSmall),
+            ],
+          ),
+        ),
+        if (direction == .horizontal)
+          IconButton.filledTonal(
+            style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.narrow),
+            onPressed: onTransposeUpPressed,
+            icon: const Icon(Symbols.add_rounded),
+          )
+        else
+          IconButton.filledTonal(
+            style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.wide),
+            onPressed: onTransposeDownPressed,
+            icon: const Icon(Symbols.remove_rounded),
+          ),
+        if (semitones != 0) ...[
+          direction == Axis.horizontal
+              ? const VerticalDivider(width: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0)
+              : const Divider(height: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
+          IconButton(onPressed: onResetPressed, icon: const Icon(Symbols.restart_alt_rounded)),
+        ],
+      ],
     );
   }
 }

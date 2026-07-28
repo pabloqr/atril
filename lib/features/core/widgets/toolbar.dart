@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 const _kCollapseBreakpoint = 600.0;
 
@@ -61,7 +62,8 @@ class ToolbarCollapsibleItem extends ToolbarIconButton {
 class Toolbar extends StatelessWidget {
   const Toolbar({
     super.key,
-    this.direction = Axis.horizontal,
+    this.direction = .horizontal,
+    this.menuAnchorOffset,
     this.showFab = false,
     this.floatingActionButton,
     this.separatorBuilder = _buildSeparator,
@@ -70,6 +72,7 @@ class Toolbar extends StatelessWidget {
   }) : assert(!showFab || floatingActionButton != null);
 
   final Axis direction;
+  final Offset? menuAnchorOffset;
 
   final bool showFab;
   final Widget? floatingActionButton;
@@ -81,11 +84,11 @@ class Toolbar extends StatelessWidget {
 
   static Widget _buildSeparator(BuildContext context, Axis direction, ToolbarSeparator item) {
     return SizedBox(
-      width: direction == Axis.vertical ? 48.0 : null,
-      height: direction == Axis.horizontal ? 48.0 : null,
-      child: direction == Axis.horizontal
-          ? VerticalDivider(width: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0)
-          : Divider(height: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
+      width: direction == .vertical ? 48.0 : null,
+      height: direction == .horizontal ? 48.0 : null,
+      child: direction == .horizontal
+          ? const VerticalDivider(width: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0)
+          : const Divider(height: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
     );
   }
 
@@ -99,7 +102,7 @@ class Toolbar extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: item.isSelected ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
         foregroundColor: item.isSelected ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-        tapTargetSize: MaterialTapTargetSize.padded,
+        tapTargetSize: .padded,
       ),
       isSelected: item.isSelected,
       onPressed: item.onPressed,
@@ -122,17 +125,18 @@ class Toolbar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final availableExtent = direction == Axis.horizontal ? constraints.maxWidth : constraints.maxHeight;
+        final availableExtent = direction == .horizontal ? constraints.maxWidth : constraints.maxHeight;
 
         final shouldCollapse = availableExtent.isFinite && availableExtent < _kCollapseBreakpoint;
 
         return Flex(
           direction: direction,
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: .min,
           children: [
             _BottomToolbar(
               shouldCollapse: shouldCollapse,
               direction: direction,
+              menuAnchorOffset: menuAnchorOffset,
               separatorBuilder: separatorBuilder,
               iconButtonBuilder: iconButtonBuilder,
               children: children,
@@ -144,8 +148,8 @@ class Toolbar extends StatelessWidget {
                 curve: _kAnimationCurve,
                 child: Padding(
                   padding: EdgeInsetsDirectional.only(
-                    start: direction == Axis.horizontal ? 8.0 : 0.0,
-                    top: direction == Axis.vertical ? 8.0 : 0.0,
+                    start: direction == .horizontal ? 8.0 : 0.0,
+                    top: direction == .vertical ? 8.0 : 0.0,
                   ),
                   child: floatingActionButton,
                 ),
@@ -163,6 +167,7 @@ class _BottomToolbar extends StatefulWidget {
   const _BottomToolbar({
     required this.shouldCollapse,
     required this.direction,
+    this.menuAnchorOffset,
     required this.separatorBuilder,
     required this.iconButtonBuilder,
     required this.children,
@@ -171,6 +176,7 @@ class _BottomToolbar extends StatefulWidget {
   final bool shouldCollapse;
 
   final Axis direction;
+  final Offset? menuAnchorOffset;
 
   final ToolbarSeparatorBuilder separatorBuilder;
   final ToolbarIconButtonBuilder iconButtonBuilder;
@@ -233,13 +239,17 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
     }
 
     final overflowButton = collapsibleItems.isNotEmpty
-        ? _OverflowMenuButton(direction: widget.direction, items: collapsibleItems)
+        ? _OverflowMenuButton(
+            direction: widget.direction,
+            menuAnchorOffset: widget.menuAnchorOffset,
+            items: collapsibleItems,
+          )
         : null;
 
     return Container(
       padding: const EdgeInsets.all(12.0),
-      width: widget.direction == Axis.vertical ? 64.0 : null,
-      height: widget.direction == Axis.horizontal ? 64.0 : null,
+      width: widget.direction == .vertical ? 64.0 : null,
+      height: widget.direction == .horizontal ? 64.0 : null,
       decoration: BoxDecoration(
         color: colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(32.0),
@@ -247,7 +257,7 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
       ),
       child: Flex(
         direction: widget.direction,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         spacing: _kItemSpacing,
         children: [
           ...fixedWidgets,
@@ -257,7 +267,7 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
                 animation: _controller,
                 child: Flex(
                   direction: widget.direction,
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisSize: .min,
                   spacing: _kItemSpacing,
                   children: [for (final item in collapsibleItems) widget.iconButtonBuilder(context, item)],
                 ),
@@ -272,14 +282,14 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
 
   Widget _buildCollapsibleGroup({required Widget actionsGroup, required Widget overflowButton}) {
     switch (_controller.status) {
-      case AnimationStatus.dismissed:
+      case .dismissed:
         return actionsGroup;
 
-      case AnimationStatus.completed:
+      case .completed:
         return overflowButton;
 
-      case AnimationStatus.forward:
-      case AnimationStatus.reverse:
+      case .forward:
+      case .reverse:
         return _buildTransitionGroup(actionsGroup, overflowButton);
     }
   }
@@ -296,7 +306,7 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
 
     return Flex(
       direction: widget.direction,
-      mainAxisSize: MainAxisSize.min,
+      mainAxisSize: .min,
       children: [
         _CollapsingChild(
           direction: widget.direction,
@@ -305,8 +315,8 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
           child: actionsGroup,
         ),
         SizedBox(
-          width: widget.direction == Axis.horizontal ? spacing : 0.0,
-          height: widget.direction == Axis.vertical ? spacing : 0.0,
+          width: widget.direction == .horizontal ? spacing : 0.0,
+          height: widget.direction == .vertical ? spacing : 0.0,
         ),
         _CollapsingChild(
           direction: widget.direction,
@@ -343,9 +353,9 @@ class _CollapsingChild extends StatelessWidget {
         child: Opacity(
           opacity: visibility,
           child: Align(
-            alignment: direction == Axis.horizontal ? AlignmentDirectional.centerStart : Alignment.topCenter,
-            widthFactor: direction == Axis.horizontal ? visibility : 1.0,
-            heightFactor: direction == Axis.vertical ? visibility : 1.0,
+            alignment: direction == .horizontal ? .centerStart : .topCenter,
+            widthFactor: direction == .horizontal ? visibility : 1.0,
+            heightFactor: direction == .vertical ? visibility : 1.0,
             child: child,
           ),
         ),
@@ -355,9 +365,10 @@ class _CollapsingChild extends StatelessWidget {
 }
 
 class _OverflowMenuButton extends StatelessWidget {
-  const _OverflowMenuButton({required this.direction, required this.items});
+  const _OverflowMenuButton({required this.direction, this.menuAnchorOffset, required this.items});
 
   final Axis direction;
+  final Offset? menuAnchorOffset;
 
   final List<ToolbarCollapsibleItem> items;
 
@@ -376,7 +387,7 @@ class _OverflowMenuButton extends StatelessWidget {
     return Directionality(
       textDirection: TextDirection.values[(textDirection.index + 1) % TextDirection.values.length],
       child: MenuAnchor(
-        alignmentOffset: Offset(dx, dy),
+        alignmentOffset: menuAnchorOffset ?? Offset(dx, dy),
         animated: true,
         menuChildren: List.generate(items.length, (index) {
           final item = items[index];
@@ -394,7 +405,7 @@ class _OverflowMenuButton extends StatelessWidget {
           );
         }),
         builder: (context, controller, child) {
-          final icon = const Icon(Icons.more_vert_rounded);
+          final icon = const Icon(Symbols.more_vert_rounded);
 
           return AnimatedSwitcher(
             duration: const Duration(milliseconds: 200),
