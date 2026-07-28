@@ -5,6 +5,8 @@
 abstract final class Patterns {
   const Patterns._();
 
+  static final RegExp lineEndings = RegExp(r'\r\n|\r|\n');
+
   /// A complete directive with a non-empty value when a colon is present.
   ///
   /// Used by the parser, where incomplete editor input must be diagnosed.
