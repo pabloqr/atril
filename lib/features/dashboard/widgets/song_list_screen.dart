@@ -4,10 +4,11 @@ import 'package:atril/features/core/theme/atril_theme.dart';
 import 'package:atril/features/core/utils/widget_utilities.dart';
 import 'package:atril/features/core/widgets/connected_button_group.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
-import 'package:atril/features/song/song_list_tile.dart';
+import 'package:atril/features/song/widgets/song_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class SongListScreen extends StatefulWidget {
   const SongListScreen({super.key, required this.viewModel});
@@ -54,14 +55,14 @@ class _SongListScreenState extends State<SongListScreen> with SingleTickerProvid
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.narrow),
             tooltip: 'Import song',
             onPressed: () {},
-            icon: const Icon(Icons.file_open_rounded),
+            icon: const Icon(Symbols.file_open_rounded),
           ),
           const SizedBox(width: 4.0),
           IconButton(
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.regular),
             tooltip: 'Settings',
             onPressed: () {},
-            icon: const Icon(Icons.settings_rounded),
+            icon: const Icon(Symbols.settings_rounded),
           ),
           const SizedBox(width: 8.0),
         ],
@@ -246,7 +247,7 @@ class _LibraryBanner extends StatelessWidget {
                 width: 56.0,
                 height: 56.0,
                 decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(20.0)),
-                child: Icon(Icons.library_music_rounded, color: colorScheme.onPrimary, size: 32.0),
+                child: Icon(Icons.library_music_rounded, color: colorScheme.onPrimary, size: 32.0, opticalSize: 32.0),
               ),
               Expanded(
                 child: Column(
@@ -314,12 +315,12 @@ class _LibraryControlsState extends State<_LibraryControls> {
                   ButtonGroupItem(
                     value: LibrarySortOrder.title,
                     label: const Text('Title'),
-                    icon: const Icon(Icons.sort_by_alpha_rounded),
+                    icon: const Icon(Symbols.sort_by_alpha_rounded),
                   ),
                   ButtonGroupItem(
                     value: LibrarySortOrder.artist,
                     label: const Text('Artist'),
-                    icon: const Icon(Icons.person_rounded),
+                    icon: const Icon(Symbols.person_rounded),
                   ),
                 ],
                 selected: {widget.viewModel.sortOrder},

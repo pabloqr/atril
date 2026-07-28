@@ -11,6 +11,8 @@ abstract final class PersistenceService {
   /// Lists the direct children of an existing directory.
   Future<List<FileSystemEntity>> listDirectory(String path);
 
+  Future<bool> existsFile(String path);
+
   /// Returns a readable file handle for an existing file.
   Future<File> readFile(String path);
 
@@ -31,7 +33,7 @@ final class LocalPersistenceService implements PersistenceService {
   @override
   Future<Directory> createDirectory(String path) async {
     final dir = Directory(_fullDirectoryPath(path));
-    return await dir.create(recursive: true);
+    return dir.create(recursive: true);
   }
 
   @override
@@ -42,6 +44,12 @@ final class LocalPersistenceService implements PersistenceService {
     }
 
     return dir.listSync();
+  }
+
+  @override
+  Future<bool> existsFile(String path) async {
+    final file = File(_fullDirectoryPath(path));
+    return file.exists();
   }
 
   @override
@@ -59,7 +67,7 @@ final class LocalPersistenceService implements PersistenceService {
     final file = File(_fullDirectoryPath(path));
     await file.create(recursive: true);
 
-    return await file.writeAsString(content);
+    return file.writeAsString(content);
   }
 
   @override

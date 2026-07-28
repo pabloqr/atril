@@ -1,38 +1,50 @@
 // ignore_for_file: unused_element
 
+final class AppRoute {
+  AppRoute({required this.name, required this.path}) : assert(name.isNotEmpty), assert(path.isNotEmpty);
+
+  final String name;
+  final String path;
+}
+
 // -------------------------------------------------------------------------------------------------------------------//
 // COMMON ROUTES
 // -------------------------------------------------------------------------------------------------------------------//
-const String _authRelative = '/auth';
-const String _songsRelative = '/songs';
-const String _usersRelative = '/users';
+const _authRelative = '/auth';
+const _songsRelative = '/songs';
+const _usersRelative = '/users';
 
 // abstract final class ServerRoutes {
-//   static const String signUpRoute = '$_authRelative/signup';
-//   static const String signInRoute = '$_authRelative/signin';
-//   static const String refreshAuthRoute = '$_authRelative/refresh-token';
-//   static const String signOutRoute = '$_authRelative/signout';
+//   static const signUpRoute = '$_authRelative/signup';
+//   static const signInRoute = '$_authRelative/signin';
+//   static const refreshAuthRoute = '$_authRelative/refresh-token';
+//   static const signOutRoute = '$_authRelative/signout';
 // }
 
 abstract final class AppRoutes {
-  // static const String _clientRelative = '/client';
-  // static const String _adminRelative = '/admin';
+  // static const _clientRelative = '/client';
+  // static const _adminRelative = '/admin';
 
-  static const String _homeRelative = '/home';
-  // static const String _exploreRelative = '/explore';
-  static const String _profileRelative = '/profile';
-  static const String _settingsRelative = '/settings';
+  static const _homeRelative = '/';
+  // static const _exploreRelative = '/explore';
+  // static const _profileRelative = '/profile';
+  static const _settingsRelative = '/settings';
+  static const _workspaceRelative = '/workspace';
 
-  // static const String welcomeRoute = '/welcome';
+  // static final welcomeRoute = '/welcome';
 
-  // static const String signUpRoute = '/signup';
-  // static const String signInRoute = '/signin';
+  // static final signUpRoute = '/signup';
+  // static final signInRoute = '/signin';
 
-  static const String dashboardRoute = _homeRelative;
-  static const String songsRoute = _songsRelative;
-  static const String clientProfileRoute = _profileRelative;
-  static const String clientSettingsRoute = _settingsRelative;
+  static final notFoundRoute = AppRoute(name: 'not-found', path: '/__not-found');
 
-  static const String songEditorRoute = '$_songsRelative/editor';
-  static const String songPreviewRoute = '$_songsRelative/preview';
+  static final homeRoute = AppRoute(name: 'home', path: _homeRelative);
+  // static final profileRoute = _profileRelative;
+  static final settingsRoute = AppRoute(name: 'settings', path: _settingsRelative);
+
+  static AppRoute songItemRoute([String filename = ':filename']) =>
+      AppRoute(name: 'song', path: '$_songsRelative/$filename');
+
+  static AppRoute workspaceRoute([String filename = ':filename']) =>
+      AppRoute(name: 'workspace', path: '${songItemRoute(filename).path}$_workspaceRelative');
 }

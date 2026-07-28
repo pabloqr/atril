@@ -56,10 +56,10 @@ final class SongListViewModel extends ChangeNotifier {
 
   final SongRepository _songRepository;
 
-  late Command0<void> load;
-  late Command2<void, String, String> saveSong;
-  late Command3<void, String, String, String> renameSongFilename;
-  late Command1<void, String> deleteSong;
+  late final Command0<void> load;
+  late final Command2<void, String, String> saveSong;
+  late final Command3<void, String, String, String> renameSongFilename;
+  late final Command1<void, String> deleteSong;
 
   List<SongFile> _songs = [];
 
@@ -110,6 +110,16 @@ final class SongListViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
+  void dispose() {
+    load.dispose();
+    saveSong.dispose();
+    renameSongFilename.dispose();
+    deleteSong.dispose();
+
+    super.dispose();
+  }
+
   Future<Result> _load() async {
     final songsResult = await _songRepository.getSongs();
     switch (songsResult) {
@@ -127,8 +137,8 @@ final class SongListViewModel extends ChangeNotifier {
     return songsResult;
   }
 
-  Future<Result> _saveSong(String name, String source) async {
-    final createResult = await _songRepository.saveSong(SongFile(filename: name, source: source));
+  Future<Result> _saveSong(String filename, String source) async {
+    final createResult = await _songRepository.saveSong(SongFile(filename: filename, source: source));
     switch (createResult) {
       case Ok<SongFile>():
         _songs.add(createResult.value);
@@ -160,11 +170,11 @@ final class SongListViewModel extends ChangeNotifier {
     return deleteResult;
   }
 
-  Future<Result> _deleteSong(String name) async {
-    final deleteResult = await _songRepository.deleteSong(name);
+  Future<Result> _deleteSong(String filename) async {
+    final deleteResult = await _songRepository.deleteSong(filename);
     switch (deleteResult) {
       case Ok<void>():
-        _songs.removeWhere((song) => song.filename == name);
+        _songs.removeWhere((song) => song.filename == filename);
         notifyListeners();
       case Error<void>():
     }

@@ -3,6 +3,16 @@ import 'package:atril/domain/models/song/source_location.dart';
 /// Stable categories of problems found while decoding song source.
 enum ParseIssueCode { malformedDirective, unknownDirective, invalidDirectiveValue, malformedChord, invalidChord }
 
+extension ParseIssueCodeExtension on ParseIssueCode {
+  String get message => switch (this) {
+    ParseIssueCode.malformedDirective => 'Malformed directive',
+    ParseIssueCode.unknownDirective => 'Unknown directive',
+    ParseIssueCode.invalidDirectiveValue => 'Invalid directive value',
+    ParseIssueCode.malformedChord => 'Malformed chord',
+    ParseIssueCode.invalidChord => 'Invalid chord',
+  };
+}
+
 /// The impact of a [ParseIssue] on parsing or later operations.
 enum ParseIssueSeverity { warning, error, fatal }
 

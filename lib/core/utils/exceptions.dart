@@ -1,5 +1,5 @@
 /// Base type for expected domain/application failures surfaced to callers.
-abstract class AtrilException implements Exception {
+final class AtrilException implements Exception {
   const AtrilException(this.message);
 
   /// Human-readable failure reason.
@@ -10,12 +10,12 @@ abstract class AtrilException implements Exception {
 }
 
 /// Raised when user-provided input fails application validation.
-class ValidationException extends AtrilException {
+final class ValidationException extends AtrilException {
   const ValidationException(super.message);
 }
 
 /// Raised when a musical transposition cannot be represented by Atril's
 /// supported note spellings.
-class TranspositionException extends AtrilException {
+final class TranspositionException extends AtrilException {
   const TranspositionException(super.message);
 }
