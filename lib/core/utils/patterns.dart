@@ -5,12 +5,12 @@
 abstract final class Patterns {
   const Patterns._();
 
-  static final RegExp lineEndings = RegExp(r'\r\n|\r|\n');
+  static final lineEndings = RegExp(r'\r\n|\r|\n');
 
   /// A complete directive with a non-empty value when a colon is present.
   ///
   /// Used by the parser, where incomplete editor input must be diagnosed.
-  static final RegExp directiveStrict = RegExp(
+  static final directiveStrict = RegExp(
     r'^[ \t]*\{[ \t]*(?<key>[a-z][a-z0-9_-]*)[ \t]*(?::[ \t]*(?<value>\S(?:[^{}\r\n]*\S)?)[ \t]*)?\}[ \t]*$',
   );
 
@@ -18,13 +18,15 @@ abstract final class Patterns {
   ///
   /// Used by source editing so templates such as `{title: }` remain selectable
   /// and can be completed in place.
-  static final RegExp directivePermissive = RegExp(
+  static final directivePermissive = RegExp(
     r'^[ \t]*\{[ \t]*(?<key>[a-z][a-z0-9_-]*)[ \t]*(?::[ \t]?(?<value>(?=[^{}\r\n])[ \t]*[^{}\r\n]+)?)?[ \t]*\}[ \t]*$',
   );
 
+  static final key = RegExp(r'^(?<root>[A-G][#b]?)(?<extension>[^/]*)$');
+
   /// A complete chord symbol split into root, extension, and optional bass.
-  static final RegExp chord = RegExp(r'^(?<root>[A-G][#b]?)(?<extension>[^/]*)(?:/(?<bass>[A-G][#b]?))?$');
+  static final chord = RegExp(r'^(?<root>[A-G][#b]?)(?<extension>[^/]*)(?:/(?<bass>[A-G][#b]?))?$');
 
   /// An inline chord marker with its bracket-free content in `chord`.
-  static final RegExp chordInline = RegExp(r'\[(?<chord>[^\[\]\r\n]*)\]');
+  static final chordInline = RegExp(r'\[(?<chord>[^\[\]\r\n]*)\]');
 }

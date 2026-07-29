@@ -1,5 +1,5 @@
-import 'package:atril/data/services/chord/chord_codec.dart';
 import 'package:atril/domain/models/chord/chord.dart';
+import 'package:atril/domain/models/chord/key_signature.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 import 'package:atril/domain/models/song/line.dart';
 
@@ -25,7 +25,7 @@ final class Metadata {
   factory Metadata({List<DirectiveLine> directives = const []}) {
     String? title;
     String? artist;
-    Chord? key;
+    KeySignature? key;
     int? capo;
     final comments = <String>[];
     final misc = <String, List<String>>{};
@@ -40,7 +40,7 @@ final class Metadata {
         case DirectiveType.artist:
           artist ??= _stringValue(value);
         case DirectiveType.key:
-          key ??= _chordValue(value);
+          key ??= _keyValue(value);
         case DirectiveType.capo:
           capo ??= _intValue(value);
         case DirectiveType.comment:
@@ -86,7 +86,7 @@ final class Metadata {
   /// spelling already used elsewhere in the domain. This does not imply that
   /// every chord extension is musically meaningful as a key; validation belongs
   /// in the parser or editing layer.
-  final Chord? key;
+  final KeySignature? key;
 
   /// The capo fret number, when specified.
   ///
@@ -114,9 +114,8 @@ final class Metadata {
     _ => value.toString(),
   };
 
-  static Chord? _chordValue(Object? value) => switch (value) {
-    Chord() => value,
-    String() => chordCodec.decode(value),
+  static KeySignature? _keyValue(Object? value) => switch (value) {
+    KeySignature() => value,
     _ => null,
   };
 

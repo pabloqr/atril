@@ -1,4 +1,4 @@
-import 'package:atril/domain/models/chord/chord.dart';
+import 'package:atril/domain/models/chord/key_signature.dart';
 import 'package:atril/domain/models/song/directive.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 import 'package:atril/domain/models/song/line.dart';
@@ -60,7 +60,7 @@ final class Song {
   Song withArtist(String? artist) => _withHeaderDirective(DirectiveType.artist, artist);
 
   /// Returns a copy with the key directive updated or removed.
-  Song withKey(Chord? key) => _withHeaderDirective(DirectiveType.key, key);
+  Song withKey(KeySignature? key) => _withHeaderDirective(DirectiveType.key, key);
 
   /// Returns a copy with the capo directive updated or removed.
   Song withCapo(int? capo) => _withHeaderDirective(DirectiveType.capo, capo);

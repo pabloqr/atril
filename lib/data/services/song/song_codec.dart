@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:atril/core/utils/patterns.dart';
 import 'package:atril/data/services/chord/chord_codec.dart';
+import 'package:atril/data/services/chord/key_signature_codec.dart';
 import 'package:atril/domain/models/song.dart';
 
 /// A [SongCodec] instance for encoding and decoding ChordPro documents.
@@ -76,8 +77,16 @@ final class _SongDecoder extends Converter<String, Song> {
     if (sourceLine.trim().startsWith('{')) {
       final directive = Patterns.directiveStrict.firstMatch(sourceLine);
       if (directive != null) {
+        final name = directive.namedGroup('key')!.trim();
+        final rawValue = directive.namedGroup('value');
+
+        final value = switch (DirectiveType.lookup[name]) {
+          DirectiveType.key when rawValue != null => keySignatureCodec.decode(rawValue),
+          _ => rawValue,
+        };
+
         return DirectiveLine(
-          directive: Directive(name: directive.namedGroup('key')!.trim(), value: directive.namedGroup('value')),
+          directive: Directive(name: name, value: value),
         );
       }
 

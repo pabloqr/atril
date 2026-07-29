@@ -45,6 +45,10 @@ enum Note {
   /// The accidental modifying [letter].
   final Accidental accidental;
 
+  static List<Note> get sharps => List.unmodifiable([c, cSharp, d, dSharp, e, f, fSharp, g, gSharp, a, aSharp, b]);
+
+  static List<Note> get flats => List.unmodifiable([c, dFlat, d, eFlat, e, f, gFlat, g, aFlat, a, bFlat, b]);
+
   /// The normalized pitch class in the range 0 through 11, where C is zero.
   int get semitone => (letter.naturalSemitone + accidental.semitoneOffset) % 12;
 
