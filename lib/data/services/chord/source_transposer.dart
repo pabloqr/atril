@@ -3,6 +3,7 @@ import 'package:atril/core/utils/patterns.dart';
 import 'package:atril/data/services/chord/chord_codec.dart';
 import 'package:atril/data/services/chord/song_transposer.dart';
 import 'package:atril/domain/models/chord.dart';
+import 'package:atril/domain/models/song/directive_type.dart';
 
 final class SourceTransposer {
   const SourceTransposer();
@@ -39,7 +40,25 @@ final class SourceTransposer {
   String _transposeLine(String line, Interval interval, TransposeDirection direction) {
     // SongCodec treats a line beginning with "{" as a directive or malformed
     // directive rather than parsing inline chords from it.
-    if (line.trimLeft().startsWith('{')) return line;
+    if (line.trimLeft().startsWith('{')) {
+      final directive = Patterns.directiveStrict.firstMatch(line);
+      if (directive == null || directive.namedGroup('key')!.trim() != DirectiveType.key.name) return line;
+
+      final currentValue = directive.namedGroup('value');
+      if (currentValue == null) return line;
+
+      final directiveString = directive.group(0)!;
+      final key = directive.namedGroup('key')!;
+
+      final keyEnd = directiveString.indexOf(key) + key.length;
+      final valueStart = directiveString.indexOf(currentValue, keyEnd);
+
+      final start = directive.start + valueStart;
+      final end = start + currentValue.length;
+
+      final newValue = transposeChord(currentValue, interval, direction);
+      return line.substring(0, start) + newValue + line.substring(end);
+    }
 
     return line.replaceAllMapped(Patterns.chordInline, (match) {
       final chordSource = match.group(1)!;
