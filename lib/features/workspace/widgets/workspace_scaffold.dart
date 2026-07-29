@@ -48,6 +48,8 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
 
   final _filenameController = TextEditingController();
 
+  int _transposeSemitones = 0;
+
   @override
   void initState() {
     super.initState();
@@ -123,6 +125,25 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
             behavior: SnackBarBehavior.floating,
           ),
         );
+      }
+    });
+  }
+
+  void _handleTransposeResult(int semitones, String? error, bool isCompact) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _isPreview) return;
+      _focusNode.requestFocus();
+
+      if (error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(error),
+            margin: isCompact ? .fromLTRB(16.0, 16.0, 16.0, 160.0) : null,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else {
+        setState(() => _transposeSemitones += semitones);
       }
     });
   }
@@ -268,7 +289,22 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                           ),
                                         ),
 
-                                  widgetBuilder: (context) => _buildTransposeWidgetAnchor(context, isCompact),
+                                  widgetBuilder: (context) => _TransposeControls(
+                                    direction: isCompact ? .horizontal : .vertical,
+                                    semitones: _transposeSemitones,
+                                    onTransposeDownPressed: () {
+                                      final error = widget.editorViewModel.transpose(-1);
+                                      _handleTransposeResult(-1, error, isCompact);
+                                    },
+                                    onTransposeUpPressed: () {
+                                      final error = widget.editorViewModel.transpose(1);
+                                      _handleTransposeResult(1, error, isCompact);
+                                    },
+                                    onResetPressed: () {
+                                      final error = widget.editorViewModel.transpose(_transposeSemitones * -1);
+                                      _handleTransposeResult(_transposeSemitones * -1, error, isCompact);
+                                    },
+                                  ),
                                   builder: (context, controller, child) => Toolbar(
                                     direction: isCompact ? .horizontal : .vertical,
                                     showFab: !_isPreview,
@@ -294,15 +330,15 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         icon: Symbols.redo_rounded,
                                         label: 'Redo',
                                       ),
+                                      ToolbarCollapsibleItem(
+                                        key: ValueKey(controller.isOpen),
+                                        animate: true,
+                                        onPressed: controller.toggle,
+                                        icon: Icons.swap_vert_rounded,
+                                        isSelected: controller.isOpen,
+                                        label: 'Transpose',
+                                      ),
                                       if (!_isPreview) ...[
-                                        ToolbarCollapsibleItem(
-                                          key: ValueKey(('transpose', controller.isOpen)),
-                                          animate: true,
-                                          onPressed: controller.toggle,
-                                          icon: Icons.swap_vert_rounded,
-                                          isSelected: controller.isOpen,
-                                          label: 'Transpose',
-                                        ),
                                         ToolbarCollapsibleItem(
                                           onPressed: widget.viewModel.issuesCount > 0
                                               ? () => _selectNextIssue(isCompact)
@@ -314,14 +350,6 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                           label: 'Issues',
                                         ),
                                       ] else ...[
-                                        ToolbarCollapsibleItem(
-                                          key: ValueKey(('semitones', controller.isOpen)),
-                                          animate: true,
-                                          onPressed: controller.toggle,
-                                          icon: Icons.swap_vert_rounded,
-                                          isSelected: controller.isOpen,
-                                          label: 'Semitones',
-                                        ),
                                         ToolbarCollapsibleItem(
                                           onPressed: () {},
                                           icon: Symbols.discover_tune_rounded,
@@ -463,27 +491,6 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
         ),
         const SizedBox(width: 8.0),
       ],
-    );
-  }
-
-  Widget _buildTransposeWidgetAnchor(BuildContext context, bool isCompact) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Material(
-      color: colorScheme.surfaceContainer,
-      elevation: 3.0,
-      borderRadius: BorderRadius.circular(16.0),
-      clipBehavior: Clip.antiAlias,
-      child: Padding(
-        padding: const .all(4.0),
-        child: _TransposeControls(
-          direction: isCompact ? .horizontal : .vertical,
-          semitones: 0,
-          onTransposeDownPressed: () {},
-          onTransposeUpPressed: () {},
-          onResetPressed: () {},
-        ),
-      ),
     );
   }
 }
@@ -690,7 +697,7 @@ class _TransposeControls extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
 
-    return Flex(
+    final content = Flex(
       direction: direction,
       mainAxisSize: .min,
       spacing: 4.0,
@@ -698,13 +705,13 @@ class _TransposeControls extends StatelessWidget {
         if (direction == .horizontal)
           IconButton.filledTonal(
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.narrow),
-            onPressed: onTransposeDownPressed,
+            onPressed: semitones > -12 ? onTransposeDownPressed : null,
             icon: const Icon(Symbols.remove_rounded),
           )
         else
           IconButton.filledTonal(
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.wide),
-            onPressed: onTransposeUpPressed,
+            onPressed: semitones < 12 ? onTransposeUpPressed : null,
             icon: const Icon(Symbols.add_rounded),
           ),
         Container(
@@ -721,22 +728,39 @@ class _TransposeControls extends StatelessWidget {
         if (direction == .horizontal)
           IconButton.filledTonal(
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.narrow),
-            onPressed: onTransposeUpPressed,
+            onPressed: semitones < 12 ? onTransposeUpPressed : null,
             icon: const Icon(Symbols.add_rounded),
           )
         else
           IconButton.filledTonal(
             style: WidgetStyleUtilities.iconButtonStyle(ButtonWidth.wide),
-            onPressed: onTransposeDownPressed,
+            onPressed: semitones > -12 ? onTransposeDownPressed : null,
             icon: const Icon(Symbols.remove_rounded),
           ),
         if (semitones != 0) ...[
           direction == Axis.horizontal
-              ? const VerticalDivider(width: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0)
-              : const Divider(height: 20.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
-          IconButton(onPressed: onResetPressed, icon: const Icon(Symbols.restart_alt_rounded)),
+              ? const VerticalDivider(width: 8.0, thickness: 1.0, indent: 8.0, endIndent: 8.0)
+              : const Divider(height: 8.0, thickness: 1.0, indent: 8.0, endIndent: 8.0),
+          IconButton(
+            style: WidgetStyleUtilities.iconButtonStyle(
+              direction == .horizontal ? ButtonWidth.narrow : ButtonWidth.wide,
+            ),
+            onPressed: onResetPressed,
+            icon: const Icon(Symbols.restart_alt_rounded),
+          ),
         ],
       ],
+    );
+
+    return Material(
+      elevation: 3.0,
+      color: colorScheme.surfaceContainer,
+      borderRadius: .circular(16.0),
+      clipBehavior: .antiAlias,
+      child: Padding(
+        padding: const .all(4.0),
+        child: direction == .horizontal ? IntrinsicHeight(child: content) : IntrinsicWidth(child: content),
+      ),
     );
   }
 }

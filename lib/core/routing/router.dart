@@ -1,5 +1,6 @@
 import 'package:atril/core/routing/route_observer.dart';
 import 'package:atril/core/routing/routes.dart';
+import 'package:atril/data/services/chord/source_transposer.dart';
 import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/dashboard/widgets/song_list_screen.dart';
@@ -58,6 +59,7 @@ GoRouter router() => GoRouter(
         final editorViewModel = EditorViewModel(
           workspaceViewModel: workspaceViewModel,
           sourceEditor: const SourceEditor(),
+          sourceTransposer: const SourceTransposer(),
         );
 
         return LoadingScreen(

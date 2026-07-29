@@ -12,9 +12,9 @@ import 'package:atril/domain/models/song.dart';
 /// Atril currently supports only single flats and sharps. [transposeNote]
 /// throws [TranspositionException] if a requested spelling would require a
 /// double accidental.
-final class Transposer {
+final class SongTransposer {
   /// Creates a stateless transposer.
-  const Transposer();
+  const SongTransposer();
 
   /// Returns a song whose lyric-line chord anchors are transposed.
   ///
@@ -22,22 +22,24 @@ final class Transposer {
   /// are preserved. Metadata is rebuilt by the [Song] constructor from the
   /// resulting directive lines; directive values are not transposed.
   Song transposeSong(Song song, Interval interval, TransposeDirection direction) {
-    final transposedLines = song.lines.map((line) {
-      if (line is LyricLine) {
-        return LyricLine(
-          text: line.text,
-          chords: line.chords
-              .map(
-                (anchor) =>
-                    ChordAnchor(chord: transposeChord(anchor.chord, interval, direction), offset: anchor.offset),
-              )
-              .toList(),
-        );
-      }
-      return line;
-    }).toList();
+    final transposedLines = song.lines
+        .map(
+          (line) => switch (line) {
+            LyricLine(text: final text, chords: final chords) => LyricLine(
+              text: text,
+              chords: chords
+                  .map(
+                    (anchor) =>
+                        ChordAnchor(chord: transposeChord(anchor.chord, interval, direction), offset: anchor.offset),
+                  )
+                  .toList(),
+            ),
+            _ => line,
+          },
+        )
+        .toList();
 
-    return Song(lines: transposedLines, issues: song.issues.toList());
+    return Song(lines: transposedLines, issues: song.issues);
   }
 
   /// Transposes the root and optional slash bass while preserving the suffix.

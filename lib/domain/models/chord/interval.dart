@@ -114,5 +114,5 @@ enum Interval {
   int get diatonicSteps => quantity.diatonicSteps;
 
   @override
-  String toString() => '${quantity.name} ${qualifier.name}';
+  String toString() => '${quantity.name}${qualifier.name}';
 }
