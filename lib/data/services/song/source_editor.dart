@@ -218,10 +218,8 @@ final class SourceEditor {
   List<_SourceLine> _sourceLines(String source) {
     final lines = <_SourceLine>[];
 
-    final lineEndingPattern = RegExp(r'\r\n|\r|\n');
-
     var index = 0;
-    for (final line in lineEndingPattern.allMatches(source)) {
+    for (final line in Patterns.lineEndings.allMatches(source)) {
       lines.add(_SourceLine(start: index, content: source.substring(index, line.start), lineEnding: line.group(0)!));
 
       index = line.end;
@@ -316,7 +314,7 @@ final class SourceEditor {
   int _fragmentOffset(String template) => template.indexOfAny(['}', ']']);
 
   String _newlineFor(String source) {
-    final match = RegExp(r'\r\n|\r|\n').firstMatch(source);
+    final match = Patterns.lineEndings.firstMatch(source);
     return match?.group(0) ?? '\n';
   }
 

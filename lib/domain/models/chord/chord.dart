@@ -7,7 +7,7 @@ import 'package:atril/domain/models/chord/note.dart';
 /// requiring the domain model to understand every possible chord vocabulary.
 final class Chord {
   /// Creates a chord with the required [root].
-  Chord({required this.root, this.extension, this.bass});
+  const Chord({required this.root, this.extension, this.bass});
 
   /// The note on which the chord is built.
   final Note root;

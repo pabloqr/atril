@@ -21,8 +21,5 @@ enum NoteLetter {
   ///
   /// Values wrap after B. Callers that need to move down can pass the
   /// equivalent positive distance, as the transposition service does.
-  NoteLetter plusDiatonic(int steps) {
-    final values = NoteLetter.values;
-    return values[(diatonicIndex + steps) % values.length];
-  }
+  NoteLetter plusDiatonic(int steps) => NoteLetter.values[(diatonicIndex + steps) % NoteLetter.values.length];
 }

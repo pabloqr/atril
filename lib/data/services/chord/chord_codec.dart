@@ -45,9 +45,7 @@ final class ChordDecoder extends Converter<String, Chord> {
   @override
   Chord convert(String input) {
     final match = Patterns.chord.firstMatch(input);
-    if (match == null) {
-      throw FormatException('Invalid chord string: "$input"');
-    }
+    if (match == null) throw FormatException('Invalid chord string: "$input"');
 
     final root = Note.parse(match.group(1)!);
     final ext = match.group(2)!.isEmpty ? null : match.group(2);

@@ -1,16 +1,21 @@
+import 'package:atril/core/utils/exceptions.dart';
+import 'package:atril/data/services/chord/chromatic_transposition.dart';
+import 'package:atril/data/services/chord/source_transposer.dart';
 import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/foundation.dart';
 
 final class EditorViewModel extends ChangeNotifier {
-  EditorViewModel({required this._workspaceViewModel, required this._sourceEditor})
+  EditorViewModel({required this._workspaceViewModel, required this._sourceEditor, required this._sourceTransposer})
     : _knownSource = _workspaceViewModel.source {
     _workspaceViewModel.addListener(_handleWorkspaceChanged);
   }
 
   final WorkspaceViewModel _workspaceViewModel;
+
   final SourceEditor _sourceEditor;
+  final SourceTransposer _sourceTransposer;
 
   bool _updatingWorkspace = false;
   String _knownSource;
@@ -42,6 +47,20 @@ final class EditorViewModel extends ChangeNotifier {
     super.dispose();
   }
 
+  void _handleWorkspaceChanged() {
+    if (_updatingWorkspace) return;
+
+    final source = _workspaceViewModel.source;
+
+    if (source != _knownSource) {
+      _knownSource = source;
+      _selection = const NoSelection();
+      _activeIssueIndex = null;
+    }
+
+    notifyListeners();
+  }
+
   void update(String source, Selection selection) {
     _activeIssueIndex = null;
     _apply(source, selection, false);
@@ -65,6 +84,18 @@ final class EditorViewModel extends ChangeNotifier {
     }
 
     return result;
+  }
+
+  String? transpose(ChromaticTransposition transposition) {
+    try {
+      final transposedSource = _sourceTransposer.transposeSource(source, transposition);
+      if (transposedSource == source) return null;
+
+      _apply(transposedSource, _selection);
+      return null;
+    } on TranspositionException catch (e) {
+      return e.message;
+    }
   }
 
   bool selectNextIssue() {
@@ -110,20 +141,6 @@ final class EditorViewModel extends ChangeNotifier {
     }
 
     if (notify) notifyListeners();
-  }
-
-  void _handleWorkspaceChanged() {
-    if (_updatingWorkspace) return;
-
-    final source = _workspaceViewModel.source;
-
-    if (source != _knownSource) {
-      _knownSource = source;
-      _selection = const NoSelection();
-      _activeIssueIndex = null;
-    }
-
-    notifyListeners();
   }
 
   int _findNextIssueIndex(List<ParseIssue> issues) {
