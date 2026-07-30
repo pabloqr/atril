@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.2.3](https://github.com/pabloqr/atril/compare/v0.2.2...v0.2.3) (2026-07-30)
+
+
+### Features
+
+* add key signature model and codec ([2cdaff3](https://github.com/pabloqr/atril/commit/2cdaff327d2fb82acf54416290dd323eaf806ce7))
+* **core:** add line endings RegExp pattern ([220c102](https://github.com/pabloqr/atril/commit/220c1028def8a88c491a91ae655881c6263e56ec))
+* **workspace:** add source transposition controls logic ([667f6d8](https://github.com/pabloqr/atril/commit/667f6d89d2bb487cf96a41efd1ed9f3412605bd5))
+
+
+### Bug Fixes
+
+* **transposer:** transpose key directives in source ([c8491fb](https://github.com/pabloqr/atril/commit/c8491fb5acd661c613626ab9f84a31bfef937741))
+
+
+### Refactors
+
+* **transposer:** add chromatic transposition variants infrastructure ([3c6f012](https://github.com/pabloqr/atril/commit/3c6f012fc1aafbfc9e419619e3ca9a3002378af9))
+* **transposer:** introduce chromatic transposition model ([adb3b6e](https://github.com/pabloqr/atril/commit/adb3b6ef86907eea5bf13166600cfdf632cddf7d))
+
+
+### Documentation
+
+* **transposer:** document chromatic transposition API ([01726de](https://github.com/pabloqr/atril/commit/01726de2103c9c9cfc019eda56d186168bd0da5d))
+
 ## [0.2.2](https://github.com/pabloqr/atril/compare/v0.2.1...v0.2.2) (2026-07-28)
 
 
