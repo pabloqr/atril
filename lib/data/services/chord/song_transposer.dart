@@ -4,25 +4,21 @@ import 'package:atril/domain/models/chord.dart';
 import 'package:atril/domain/models/chord/key_signature.dart';
 import 'package:atril/domain/models/song.dart';
 
-/// Transposes notes, chords, and parsed songs by spelled musical intervals.
+/// Applies chromatic transposition requests to notes, chords, and parsed songs.
 ///
-/// The algorithm applies the interval in two dimensions: [Interval.diatonicSteps]
-/// selects the destination note letter and [Interval.semitones] selects its
-/// pitch class. Combining both preserves interval spelling, for example making
-/// an augmented unison from C produce C# rather than Db.
-///
-/// Atril currently supports only single flats and sharps. [transposeNote]
-/// throws [TranspositionException] if a requested spelling would require a
-/// double accidental.
+/// A [ChromaticTransposition] selects how the destination is expressed. The
+/// transposer first derives the target key when the source song has one, then
+/// uses that key to choose consistent enharmonic spellings for chord roots and
+/// slash bass notes.
 final class SongTransposer {
   /// Creates a stateless transposer.
   const SongTransposer();
 
   /// Returns a song whose lyric-line chord anchors are transposed.
   ///
-  /// Lyric text, line order, anchor offsets, non-lyric lines, and parser issues
-  /// are preserved. Metadata is rebuilt by the [Song] constructor from the
-  /// resulting directive lines; directive values are not transposed.
+  /// Lyric text, line order, anchor offsets, non-key directives, and parser
+  /// issues are preserved. When the song has a key, its key directive is
+  /// replaced with the result of [transposeKey].
   Song transposeSong(Song song, ChromaticTransposition transposition) {
     final transposedKey = transposeKey(song.metadata.key, transposition);
     final transposedLines = song.lines
@@ -47,6 +43,12 @@ final class SongTransposer {
     return Song(lines: transposedLines, issues: song.issues).withKey(transposedKey);
   }
 
+  /// Returns the target key produced by [transposition].
+  ///
+  /// Returns `null` when [key] is absent. Semitone transposition preserves the
+  /// key mode and selects an enharmonic key according to the request's pitch
+  /// preference. Other request modes may throw [UnimplementedError] until their
+  /// algorithms are implemented.
   KeySignature? transposeKey(KeySignature? key, ChromaticTransposition transposition) {
     if (key == null) return null;
 
@@ -57,7 +59,10 @@ final class SongTransposer {
     };
   }
 
-  /// Transposes the root and optional slash bass while preserving the suffix.
+  /// Transposes a chord root and optional slash bass while preserving its
+  /// extension.
+  ///
+  /// When provided, [targetKey] determines the enharmonic spelling of notes.
   Chord transposeChord(Chord chord, ChromaticTransposition transposition, [KeySignature? targetKey]) {
     return Chord(
       root: transposeNote(chord.root, transposition, targetKey),
@@ -66,12 +71,15 @@ final class SongTransposer {
     );
   }
 
-  /// Transposes [note] by [interval] in [direction].
+  /// Transposes [note] according to [transposition].
   ///
-  /// First the destination letter is chosen diatonically. The chromatic target
-  /// is then calculated and the accidental needed to reconcile the two is
-  /// selected. Throws [TranspositionException] when that accidental is outside
-  /// the supported flat-natural-sharp range.
+  /// When [targetKey] is available, its accidental family takes precedence over
+  /// the fallback pitch preference carried by the request.
+  ///
+  /// Request modes whose algorithms are not yet available may throw
+  /// [UnimplementedError]. The current interval implementation may throw
+  /// [TranspositionException] when the requested spelling would require an
+  /// unsupported accidental.
   Note transposeNote(Note note, ChromaticTransposition transposition, [KeySignature? targetKey]) {
     return switch (transposition) {
       BySemitones() => _transposeNoteBySemitones(note, transposition, targetKey),
@@ -140,7 +148,7 @@ final class SongTransposer {
   }
 
   Note _transposesNoteByInterval(Note note, ByInterval transposition, [KeySignature? targetKey]) {
-    // TODO: refactorizar implementación de la transposición (diatónica --> cromática)
+    // TODO: Replace the temporary diatonic implementation with chromatic transposition.
 
     final steps = transposition.interval.diatonicSteps;
     final semitoneShift = transposition.interval.semitones * transposition.direction.sign;

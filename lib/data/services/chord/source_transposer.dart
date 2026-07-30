@@ -5,12 +5,19 @@ import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/data/services/chord/song_transposer.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 
+/// Applies chord transposition directly to ChordPro source text.
+///
+/// Source formatting and line endings are retained, making this service
+/// suitable for editor operations where re-encoding the complete parsed song
+/// would otherwise normalize the document.
 final class SourceTransposer {
+  /// Creates a stateless source transposer.
   const SourceTransposer();
 
   final _songTransposer = const SongTransposer();
 
-  /// Transposes every valid inline chord in [source].
+  /// Transposes every valid inline chord and supported key directive in
+  /// [source] according to [transposition].
   ///
   /// Directive lines, invalid chord markers, lyric text, and line endings are
   /// preserved. A [TranspositionException] from a valid chord is allowed to
@@ -31,6 +38,8 @@ final class SourceTransposer {
   }
 
   /// Transposes a chord from its compact source representation.
+  ///
+  /// Throws [FormatException] when [chordSource] is not a supported chord.
   String transposeChord(String chordSource, ChromaticTransposition transposition) {
     final chord = chordCodec.decode(chordSource);
     final transposedChord = _songTransposer.transposeChord(chord, transposition);
