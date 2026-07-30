@@ -1,5 +1,6 @@
 import 'package:atril/core/extensions/string.dart';
 import 'package:atril/core/routing/routes.dart';
+import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/core/extensions/directive_type.dart';
@@ -293,15 +294,17 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                     direction: isCompact ? .horizontal : .vertical,
                                     semitones: _transposeSemitones,
                                     onTransposeDownPressed: () {
-                                      final error = widget.editorViewModel.transpose(-1);
+                                      final error = widget.editorViewModel.transpose(BySemitones(-1));
                                       _handleTransposeResult(-1, error, isCompact);
                                     },
                                     onTransposeUpPressed: () {
-                                      final error = widget.editorViewModel.transpose(1);
+                                      final error = widget.editorViewModel.transpose(BySemitones(1));
                                       _handleTransposeResult(1, error, isCompact);
                                     },
                                     onResetPressed: () {
-                                      final error = widget.editorViewModel.transpose(_transposeSemitones * -1);
+                                      final error = widget.editorViewModel.transpose(
+                                        BySemitones(_transposeSemitones * -1),
+                                      );
                                       _handleTransposeResult(_transposeSemitones * -1, error, isCompact);
                                     },
                                   ),

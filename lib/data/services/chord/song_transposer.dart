@@ -1,5 +1,7 @@
 import 'package:atril/core/utils/exceptions.dart';
+import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/domain/models/chord.dart';
+import 'package:atril/domain/models/chord/key_signature.dart';
 import 'package:atril/domain/models/song.dart';
 
 /// Transposes notes, chords, and parsed songs by spelled musical intervals.
@@ -21,7 +23,8 @@ final class SongTransposer {
   /// Lyric text, line order, anchor offsets, non-lyric lines, and parser issues
   /// are preserved. Metadata is rebuilt by the [Song] constructor from the
   /// resulting directive lines; directive values are not transposed.
-  Song transposeSong(Song song, Interval interval, TransposeDirection direction) {
+  Song transposeSong(Song song, ChromaticTransposition transposition) {
+    final transposedKey = transposeKey(song.metadata.key, transposition);
     final transposedLines = song.lines
         .map(
           (line) => switch (line) {
@@ -29,8 +32,10 @@ final class SongTransposer {
               text: text,
               chords: chords
                   .map(
-                    (anchor) =>
-                        ChordAnchor(chord: transposeChord(anchor.chord, interval, direction), offset: anchor.offset),
+                    (anchor) => ChordAnchor(
+                      chord: transposeChord(anchor.chord, transposition, transposedKey),
+                      offset: anchor.offset,
+                    ),
                   )
                   .toList(),
             ),
@@ -39,15 +44,27 @@ final class SongTransposer {
         )
         .toList();
 
-    return Song(lines: transposedLines, issues: song.issues);
+    return Song(lines: transposedLines, issues: song.issues).withKey(transposedKey);
+  }
+
+  KeySignature? transposeKey(KeySignature? key, ChromaticTransposition transposition) {
+    if (key == null) return null;
+
+    return switch (transposition) {
+      BySemitones() => _transposeKeyBySemitones(key, transposition),
+      ToKey() => _transposeKeyToKey(key, transposition),
+      ByInterval() => _transposeKeyByInterval(key, transposition),
+    };
   }
 
   /// Transposes the root and optional slash bass while preserving the suffix.
-  Chord transposeChord(Chord chord, Interval interval, TransposeDirection direction) => Chord(
-    root: transposeNote(chord.root, interval, direction),
-    extension: chord.extension,
-    bass: chord.bass != null ? transposeNote(chord.bass!, interval, direction) : null,
-  );
+  Chord transposeChord(Chord chord, ChromaticTransposition transposition, [KeySignature? targetKey]) {
+    return Chord(
+      root: transposeNote(chord.root, transposition, targetKey),
+      extension: chord.extension,
+      bass: chord.bass != null ? transposeNote(chord.bass!, transposition, targetKey) : null,
+    );
+  }
 
   /// Transposes [note] by [interval] in [direction].
   ///
@@ -55,11 +72,80 @@ final class SongTransposer {
   /// is then calculated and the accidental needed to reconcile the two is
   /// selected. Throws [TranspositionException] when that accidental is outside
   /// the supported flat-natural-sharp range.
-  Note transposeNote(Note note, Interval interval, TransposeDirection direction) {
-    final steps = interval.diatonicSteps;
-    final semitoneShift = interval.semitones * direction.sign;
+  Note transposeNote(Note note, ChromaticTransposition transposition, [KeySignature? targetKey]) {
+    return switch (transposition) {
+      BySemitones() => _transposeNoteBySemitones(note, transposition, targetKey),
+      ToKey() => _transposeNoteToKey(note, transposition),
+      ByInterval() => _transposesNoteByInterval(note, transposition, targetKey),
+    };
+  }
 
-    final newLetter = direction == TransposeDirection.up
+  KeySignature _transposeKeyBySemitones(KeySignature key, BySemitones transposition) {
+    final targetSemitone = (key.tonic.semitone + transposition.semitones) % 12;
+
+    final candidateKeys = KeySignature.values
+        .where((k) => k.mode == key.mode && k.tonic.semitone == targetSemitone)
+        .toList();
+
+    if (candidateKeys.length == 1) return candidateKeys.single;
+
+    final accidentalFamily = switch (transposition.pitchPreference) {
+      PitchPreference.sharps => Accidental.sharp,
+      PitchPreference.flats => Accidental.flat,
+      PitchPreference.automatic => key.accidentalFamily,
+    };
+
+    if (accidentalFamily != Accidental.natural) {
+      final familyKeys = candidateKeys.where((k) => k.accidentalFamily == accidentalFamily).toList();
+      if (familyKeys.isNotEmpty) return familyKeys.single;
+    }
+
+    final minAccidentalCount = candidateKeys.map((key) => key.accidentalCount).reduce((a, b) => a < b ? a : b);
+    final minAccidentalCountKeys = candidateKeys.where((key) => key.accidentalCount == minAccidentalCount).toList();
+
+    return minAccidentalCountKeys.firstWhere(
+      (key) => key.accidentalFamily == Accidental.sharp,
+      orElse: () => minAccidentalCountKeys.first,
+    );
+  }
+
+  KeySignature _transposeKeyToKey(KeySignature key, ToKey transposition) {
+    throw UnimplementedError();
+  }
+
+  KeySignature _transposeKeyByInterval(KeySignature key, ByInterval transposition) {
+    throw UnimplementedError();
+  }
+
+  Note _transposeNoteBySemitones(Note note, BySemitones transposition, [KeySignature? targetKey]) {
+    final accidentalFamily =
+        targetKey?.accidentalFamily ??
+        switch (transposition.pitchPreference) {
+          PitchPreference.automatic => note.accidental,
+          PitchPreference.sharps => Accidental.sharp,
+          PitchPreference.flats => Accidental.flat,
+        };
+
+    final notes = switch (accidentalFamily) {
+      Accidental.flat => Note.flats,
+      _ => Note.sharps,
+    };
+
+    final semitone = (note.semitone + transposition.semitones) % notes.length;
+    return notes[semitone];
+  }
+
+  Note _transposeNoteToKey(Note note, ToKey transposition) {
+    throw UnimplementedError();
+  }
+
+  Note _transposesNoteByInterval(Note note, ByInterval transposition, [KeySignature? targetKey]) {
+    // TODO: refactorizar implementación de la transposición (diatónica --> cromática)
+
+    final steps = transposition.interval.diatonicSteps;
+    final semitoneShift = transposition.interval.semitones * transposition.direction.sign;
+
+    final newLetter = transposition.direction == TransposeDirection.up
         ? note.letter.plusDiatonic(steps)
         : note.letter.plusDiatonic(NoteLetter.values.length - steps);
 
@@ -74,7 +160,7 @@ final class SongTransposer {
       1 => Accidental.sharp,
       11 => Accidental.flat,
       _ => throw TranspositionException(
-        'Transposing $note by $interval $direction requires an accidental outside the supported range (offset: $accidentalOffset).',
+        'Transposing $note by ${transposition.interval} ${transposition.direction} requires an accidental outside the supported range (offset: $accidentalOffset).',
       ),
     };
 

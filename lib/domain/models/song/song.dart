@@ -65,11 +65,29 @@ final class Song {
   /// Returns a copy with the capo directive updated or removed.
   Song withCapo(int? capo) => _withHeaderDirective(DirectiveType.capo, capo);
 
+  /// Returns a copy in which the single-value header directive [type] has been
+  /// replaced by [value].
+  ///
+  /// The update follows a remove-then-insert algorithm:
+  ///
+  /// 1. String values are trimmed; other value types are left unchanged.
+  /// 2. Every existing directive whose name matches [type] is removed. Removing
+  ///    all matches also repairs malformed input containing duplicate headers.
+  /// 3. A `null` value or an empty normalized string means "remove", so the
+  ///    filtered lines are returned without inserting a replacement.
+  /// 4. Otherwise, a new directive is inserted at its canonical header position
+  ///    and a new [Song] is created from the resulting lines.
+  ///
+  /// Reconstructing the song also rebuilds [metadata], which is derived from
+  /// directive lines. The current instance and its [lines] remain unchanged.
   Song _withHeaderDirective(DirectiveType type, Object? value) {
-    final normalizedValue = value?.toString().trim();
+    final normalizedValue = switch (value) {
+      final String text => text.trim(),
+      _ => value,
+    };
     final updatedLines = lines.where((line) => line is! DirectiveLine || line.name != type.name).toList();
 
-    if (normalizedValue == null || normalizedValue.isEmpty) {
+    if (normalizedValue == null || (normalizedValue is String && normalizedValue.isEmpty)) {
       return copyWith(lines: updatedLines);
     }
 
@@ -83,6 +101,13 @@ final class Song {
     return copyWith(lines: updatedLines);
   }
 
+  /// Finds the insertion point that preserves the canonical header order.
+  ///
+  /// Only recognized header directives participate in the comparison. The new
+  /// directive is placed before the first header with a greater
+  /// [DirectiveType.order]. If none exists, it is placed immediately after the
+  /// last recognized header, or at the start of the document when no recognized
+  /// header is present.
   int _headerInsertIndex(List<Line> lines, DirectiveType type) {
     var lastHeaderIndex = -1;
 

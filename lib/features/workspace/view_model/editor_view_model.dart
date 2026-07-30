@@ -1,7 +1,7 @@
 import 'package:atril/core/utils/exceptions.dart';
+import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/data/services/chord/source_transposer.dart';
 import 'package:atril/data/services/song/source_editor.dart';
-import 'package:atril/domain/models/chord.dart';
 import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/foundation.dart';
@@ -86,13 +86,9 @@ final class EditorViewModel extends ChangeNotifier {
     return result;
   }
 
-  String? transpose(int semitones) {
+  String? transpose(ChromaticTransposition transposition) {
     try {
-      final interval = Interval.lookup[semitones.abs() % 12]!;
-      final direction = semitones.isNegative ? TransposeDirection.down : TransposeDirection.up;
-
-      final transposedSource = _sourceTransposer.transposeSource(source, interval, direction);
-
+      final transposedSource = _sourceTransposer.transposeSource(source, transposition);
       if (transposedSource == source) return null;
 
       _apply(transposedSource, _selection);

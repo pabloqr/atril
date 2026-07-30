@@ -1,8 +1,8 @@
 import 'package:atril/core/utils/exceptions.dart';
 import 'package:atril/core/utils/patterns.dart';
 import 'package:atril/data/services/chord/chord_codec.dart';
+import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/data/services/chord/song_transposer.dart';
-import 'package:atril/domain/models/chord.dart';
 import 'package:atril/domain/models/song/directive_type.dart';
 
 final class SourceTransposer {
@@ -15,29 +15,29 @@ final class SourceTransposer {
   /// Directive lines, invalid chord markers, lyric text, and line endings are
   /// preserved. A [TranspositionException] from a valid chord is allowed to
   /// propagate so callers never receive a partially transposed source.
-  String transposeSource(String source, Interval interval, TransposeDirection direction) {
+  String transposeSource(String source, ChromaticTransposition transposition) {
     final buffer = StringBuffer();
     var lineStart = 0;
 
     for (final lineEnding in Patterns.lineEndings.allMatches(source)) {
       buffer
-        ..write(_transposeLine(source.substring(lineStart, lineEnding.start), interval, direction))
+        ..write(_transposeLine(source.substring(lineStart, lineEnding.start), transposition))
         ..write(lineEnding.group(0));
       lineStart = lineEnding.end;
     }
 
-    buffer.write(_transposeLine(source.substring(lineStart), interval, direction));
+    buffer.write(_transposeLine(source.substring(lineStart), transposition));
     return buffer.toString();
   }
 
   /// Transposes a chord from its compact source representation.
-  String transposeChord(String chordSource, Interval interval, TransposeDirection direction) {
+  String transposeChord(String chordSource, ChromaticTransposition transposition) {
     final chord = chordCodec.decode(chordSource);
-    final transposedChord = _songTransposer.transposeChord(chord, interval, direction);
+    final transposedChord = _songTransposer.transposeChord(chord, transposition);
     return chordCodec.encode(transposedChord);
   }
 
-  String _transposeLine(String line, Interval interval, TransposeDirection direction) {
+  String _transposeLine(String line, ChromaticTransposition transposition) {
     // SongCodec treats a line beginning with "{" as a directive or malformed
     // directive rather than parsing inline chords from it.
     if (line.trimLeft().startsWith('{')) {
@@ -56,7 +56,7 @@ final class SourceTransposer {
       final start = directive.start + valueStart;
       final end = start + currentValue.length;
 
-      final newValue = transposeChord(currentValue, interval, direction);
+      final newValue = transposeChord(currentValue, transposition);
       return line.substring(0, start) + newValue + line.substring(end);
     }
 
@@ -64,7 +64,7 @@ final class SourceTransposer {
       final chordSource = match.group(1)!;
 
       try {
-        return '[${transposeChord(chordSource, interval, direction)}]';
+        return '[${transposeChord(chordSource, transposition)}]';
       } on FormatException {
         return match.group(0)!;
       }
