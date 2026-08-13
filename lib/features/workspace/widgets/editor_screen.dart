@@ -230,22 +230,16 @@ class _EditorScreenState extends State<EditorScreen> with AutomaticKeepAliveClie
                       spacing: 8.0,
                       children: [
                         Icon(
-                          issue.severity == .warning
-                              ? Symbols.warning_amber_rounded
-                              : Symbols.error_outline_rounded,
+                          issue.severity == .warning ? Symbols.warning_amber_rounded : Symbols.error_outline_rounded,
                           size: 18.0,
-                          color: issue.severity == .warning
-                              ? colorScheme.tertiary
-                              : colorScheme.error,
+                          color: issue.severity == .warning ? colorScheme.tertiary : colorScheme.error,
                         ),
                         Flexible(
                           child: Text(
                             '$issueNumber of ${widget.viewModel.issuesCount}'
                             ' · ${issue.code.message}: ${issue.message}',
                             style: textTheme.labelMedium?.copyWith(
-                              color: issue.severity == .warning
-                                  ? colorScheme.tertiary
-                                  : colorScheme.error,
+                              color: issue.severity == .warning ? colorScheme.tertiary : colorScheme.error,
                             ),
                           ),
                         ),
