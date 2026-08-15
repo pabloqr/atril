@@ -1,8 +1,8 @@
 import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/domain/models/song/parse_issue.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
-import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 class EditorScreen extends StatefulWidget {
   const EditorScreen({super.key, required this.viewModel, required this.focusNode, required this.historyController});

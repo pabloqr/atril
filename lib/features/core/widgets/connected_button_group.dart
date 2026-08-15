@@ -1,8 +1,8 @@
 import 'package:atril/domain/models/settings/app_settings.dart';
 import 'package:atril/features/core/theme/atril_theme.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Data describing a button of a [ConnectedButtonGroup].
 class ButtonGroupItem<T> {

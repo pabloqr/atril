@@ -13,10 +13,10 @@ import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/editor_screen.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _kCompactBreakpoint = 600.0;
 

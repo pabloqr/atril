@@ -1,6 +1,6 @@
 import 'package:atril/domain/models/settings/app_settings.dart';
 import 'package:atril/features/core/theme/text_theme.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 abstract final class AtrilTheme {
   /// Light appearance for the application shell.

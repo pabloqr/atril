@@ -1,7 +1,7 @@
 import 'package:atril/core/routing/routes.dart';
 import 'package:atril/features/loading/view_model/loading_view_model.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LoadingScreen extends StatelessWidget {
   const LoadingScreen({super.key, required this.viewModel, required this.child});

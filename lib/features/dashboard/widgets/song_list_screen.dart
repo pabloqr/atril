@@ -5,10 +5,10 @@ import 'package:atril/features/core/utils/widget_utilities.dart';
 import 'package:atril/features/core/widgets/connected_button_group.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/song/widgets/song_list_tile.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SongListScreen extends StatefulWidget {
   const SongListScreen({super.key, required this.viewModel});

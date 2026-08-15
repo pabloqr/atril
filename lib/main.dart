@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:atril/core/config/dependencies.dart';
 import 'package:atril/core/routing/router.dart';
 import 'package:atril/features/core/theme/atril_theme.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 

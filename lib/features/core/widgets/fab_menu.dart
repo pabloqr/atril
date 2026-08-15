@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:atril/core/routing/route_observer.dart';
-import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum FabSize { small, regular, medium, large }
 

@@ -9,9 +9,9 @@ import 'package:atril/features/loading/widgets/loading_screen.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/workspace_scaffold.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:provider/provider.dart';
 
 Widget withSystemUiOverlay(BuildContext context, {required Widget child}) {
