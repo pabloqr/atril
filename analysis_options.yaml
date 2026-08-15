@@ -29,6 +29,8 @@ linter:
     - combinators_ordering
     - comment_references
     - directives_ordering
+    - empty_container_bodies
+    - initialize_in_field_declaration
     - invalid_case_patterns
     - one_member_abstracts
     - only_throw_errors
@@ -37,6 +39,10 @@ linter:
     - prefer_final_in_for_each
     - prefer_final_locals
     - prefer_single_quotes
+    - unnecessary_const_in_enum_constructor
+    - unnecessary_primary_constructor_body
+    - unnecessary_type_name_in_constructor
+    - use_declaring_parameters
 
 analyzer:
   language:
