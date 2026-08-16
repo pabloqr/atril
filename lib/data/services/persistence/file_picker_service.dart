@@ -20,21 +20,15 @@ abstract final class FilePickerService {
 final class FilePickerServiceImpl implements FilePickerService {
   @override
   Future<Result<SongFile?>> pickFile() async {
-    final pickResult = await FilePicker.pickFiles(
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: Constants.allowedFileExtensions,
     );
 
-    if (pickResult != null) {
+    if (files.isNotEmpty) {
       try {
-        final file = pickResult.files.single;
-
-        // `file_picker` must be configured to load file bytes; otherwise the
-        // repository cannot safely assume a readable platform path.
-        final bytes = file.bytes;
-        if (bytes == null) {
-          throw StateError('The selected document could not be read.');
-        }
+        final file = files.single;
+        final bytes = await file.readAsBytes();
 
         return Result.ok(SongFile(filename: file.name, source: utf8.decode(bytes, allowMalformed: false)));
       } on Exception catch (e) {
