@@ -24,7 +24,7 @@ final class const KeySignatureDecoder() extends Converter<String, KeySignature> 
   @override
   KeySignature convert(String input) {
     final match = Patterns.key.firstMatch(input);
-    if (match == null) throw FormatException('Invalid key signature string: "$input');
+    if (match == null) throw FormatException('Invalid key signature string: "$input"');
 
     final tonic = match.namedGroup('root')!;
     final extension = match.namedGroup('extension') ?? '';
@@ -33,7 +33,7 @@ final class const KeySignatureDecoder() extends Converter<String, KeySignature> 
     if (mode == null) throw FormatException('Invalid key signature mode: "$extension"');
 
     final key = KeySignature.lookup[(Note.parse(tonic), mode)];
-    if (key == null) throw FormatException('Invalid key signature string: "$input');
+    if (key == null) throw FormatException('Invalid key signature string: "$input"');
 
     return key;
   }
