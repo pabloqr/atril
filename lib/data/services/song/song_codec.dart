@@ -76,10 +76,25 @@ final class const _SongDecoder() extends Converter<String, Song> {
         final name = directive.namedGroup('key')!.trim();
         final rawValue = directive.namedGroup('value');
 
-        final value = switch (DirectiveType.lookup[name]) {
-          DirectiveType.key when rawValue != null => keySignatureCodec.decode(rawValue),
-          _ => rawValue,
-        };
+        Object? value;
+        switch (DirectiveType.lookup[name]) {
+          case DirectiveType.key when rawValue != null:
+            try {
+              value = keySignatureCodec.decode(rawValue);
+            } on FormatException catch (error) {
+              issues.add(
+                _malformedDirectiveIssue(
+                  message: error.message.toString(),
+                  sourceOffset: sourceOffset + openingIndex,
+                  lineIndex: lineIndex,
+                  position: openingIndex + 1,
+                  length: sourceLine.length - openingIndex,
+                ),
+              );
+            }
+          case _:
+            value = rawValue;
+        }
 
         return DirectiveLine(
           directive: Directive(name: name, value: value),
