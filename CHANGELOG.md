@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/pabloqr/atril/compare/v0.2.3...v0.3.0) (2026-08-17)
+
+
+### ⚠ BREAKING CHANGES
+
+* implement and fix transposer methods for chromatic transposition
+
+### Bug Fixes
+
+* **codec:** add missing double quotes in exception message ([6cc4bb7](https://github.com/pabloqr/atril/commit/6cc4bb74911e8799ab92ea96f9182b21104d08e0))
+
+
+### Refactors
+
+* adopt Dart 3.13 primary constructors ([1e63b49](https://github.com/pabloqr/atril/commit/1e63b493c7b1288cffc904b5a360ef2158e4b9d8))
+* implement and fix transposer methods for chromatic transposition ([7cdc5df](https://github.com/pabloqr/atril/commit/7cdc5df3ba012b95eb0b068a2b022307bab3ce34))
+* transposer ([fdb93f5](https://github.com/pabloqr/atril/commit/fdb93f5fa0d6ec20a9e79b70d92c9dae74468e25))
+* **transposition:** resolve chromatic transpositions ([dd4f61d](https://github.com/pabloqr/atril/commit/dd4f61d3041bf09d87471b9300bce36a5d6619d4))
+
 ## [0.2.3](https://github.com/pabloqr/atril/compare/v0.2.2...v0.2.3) (2026-07-30)
 
 
