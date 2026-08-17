@@ -36,7 +36,16 @@ import 'package:atril/domain/models/chord/interval_quantity.dart';
 /// | Augmented seventh   | 12        |
 /// | Diminished octave   | 11        |
 /// | Perfect octave      | 12        |
-enum Interval {
+enum Interval(
+  /// The interval's ordinal size, such as a third or fifth.
+  final IntervalQuantity quantity,
+
+  /// The interval's quality, such as minor, perfect, or augmented.
+  final IntervalQualifier qualifier,
+
+  /// The interval's chromatic distance in semitones.
+  final int semitones,
+) {
   perfectUnison(IntervalQuantity.unison, IntervalQualifier.perfect, 0),
   augmentedUnison(IntervalQuantity.unison, IntervalQualifier.augmented, 1),
 
@@ -70,18 +79,6 @@ enum Interval {
 
   diminishedOctave(IntervalQuantity.octave, IntervalQualifier.diminished, 11),
   perfectOctave(IntervalQuantity.octave, IntervalQualifier.perfect, 12);
-
-  /// Creates a supported interval with its diatonic and chromatic dimensions.
-  const Interval(this.quantity, this.qualifier, this.semitones);
-
-  /// The interval's ordinal size, such as a third or fifth.
-  final IntervalQuantity quantity;
-
-  /// The interval's quality, such as minor, perfect, or augmented.
-  final IntervalQualifier qualifier;
-
-  /// The interval's chromatic distance in semitones.
-  final int semitones;
 
   /// Canonical interval lookup by capo fret or chromatic semitone distance.
   ///

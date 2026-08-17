@@ -4,14 +4,12 @@ import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:material_symbols_icons/symbols.dart';
 import 'package:material_ui/material_ui.dart';
 
-class EditorScreen extends StatefulWidget {
-  const EditorScreen({super.key, required this.viewModel, required this.focusNode, required this.historyController});
-
-  final EditorViewModel viewModel;
-
-  final FocusNode focusNode;
-  final UndoHistoryController historyController;
-
+class const EditorScreen({
+  super.key,
+  required final EditorViewModel viewModel,
+  required final FocusNode focusNode,
+  required final UndoHistoryController historyController,
+}) extends StatefulWidget {
   @override
   State<EditorScreen> createState() => _EditorScreenState();
 }

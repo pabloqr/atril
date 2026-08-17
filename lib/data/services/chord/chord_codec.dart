@@ -10,10 +10,7 @@ const chordCodec = ChordCodec();
 ///
 /// The root and slash bass are parsed as [Note] values. The extension remains
 /// uninterpreted so notation outside Atril's harmonic model can round-trip.
-final class ChordCodec extends Codec<Chord, String> {
-  /// Creates a stateless chord codec.
-  const ChordCodec();
-
+final class const ChordCodec() extends Codec<Chord, String> {
   @override
   ChordEncoder get encoder => const ChordEncoder();
 
@@ -22,10 +19,7 @@ final class ChordCodec extends Codec<Chord, String> {
 }
 
 /// Serializes a [Chord] as `root + extension + optional slash bass`.
-final class ChordEncoder extends Converter<Chord, String> {
-  /// Creates a stateless chord encoder.
-  const ChordEncoder();
-
+final class const ChordEncoder() extends Converter<Chord, String> {
   /// Converts [chord] to its compact source representation.
   @override
   String convert(Chord chord) {
@@ -37,10 +31,7 @@ final class ChordEncoder extends Converter<Chord, String> {
 }
 
 /// Parses complete chord symbols accepted by [Patterns.chord].
-final class ChordDecoder extends Converter<String, Chord> {
-  /// Creates a stateless chord decoder.
-  const ChordDecoder();
-
+final class const ChordDecoder() extends Converter<String, Chord> {
   /// Parses [input] or throws [FormatException] when the full string is invalid.
   @override
   Chord convert(String input) {

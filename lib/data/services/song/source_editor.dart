@@ -6,65 +6,40 @@ import 'package:atril/core/utils/patterns.dart';
 import 'package:atril/domain/models/song.dart';
 
 /// A selection state returned with source-editing operations.
-sealed class Selection {
-  /// Creates a selection variant.
-  const Selection();
-}
+sealed class const Selection();
 
 /// Indicates that no editor selection or caret position is available.
-final class NoSelection extends Selection {
-  /// Creates an absent selection.
-  const NoSelection();
-}
+final class const NoSelection() extends Selection;
 
 /// A collapsed selection representing a caret at [position].
-final class PositionSelection extends Selection {
-  /// Creates a caret position using a zero-based source offset.
-  const PositionSelection(this.position);
-
+final class const PositionSelection(
   /// The zero-based caret offset.
-  final int position;
-}
+  final int position,
+) extends Selection;
 
 /// A normalized, half-open source selection from [start] to [end].
-final class RangeSelection extends Selection {
-  /// Creates a selection and orders the supplied endpoints.
-  RangeSelection(int start, int end) : start = min(start, end), end = max(start, end);
-
+final class RangeSelection(int start, int end) extends Selection {
   /// The inclusive zero-based start offset.
-  final int start;
+  final int start = min(start, end);
 
   /// The exclusive zero-based end offset.
-  final int end;
+  final int end = max(start, end);
 }
 
 /// Source text paired with the selection an editor should apply next.
-final class SourceFragment {
-  /// Creates a source fragment with its resulting [selection].
-  const SourceFragment({required this.source, required this.selection});
-
+final class const SourceFragment({
   /// The complete source document after an editing operation.
-  final String source;
+  required final String source,
 
   /// The caret or range to expose after replacing the editor contents.
-  final Selection selection;
-}
+  required final Selection selection,
+});
 
-sealed class SourceEditResult {
-  const SourceEditResult();
-}
+sealed class const SourceEditResult();
 
-final class SourceEditApplied extends SourceEditResult {
-  const SourceEditApplied(this.fragment);
+final class const SourceEditApplied(final SourceFragment fragment) extends SourceEditResult;
 
-  final SourceFragment fragment;
-}
-
-final class SourceEditRejected extends SourceEditResult {
-  const SourceEditRejected(this.reason);
-
-  final SourceEditRejection reason;
-}
+final class const SourceEditRejected(final SourceEditRejection reason) extends SourceEditResult;
 
 enum SourceEditRejection { noSelection, invalidSelection, multilineSelection, directiveLine, unsupportedDirective }
 
@@ -73,9 +48,7 @@ enum SourceEditRejection { noSelection, invalidSelection, multilineSelection, di
 /// Operations modify only the requested range and retain the source's existing
 /// line-ending convention. Header directives are kept in canonical order;
 /// body directives and chords are inserted relative to the current selection.
-final class SourceEditor {
-  const SourceEditor();
-
+final class const SourceEditor() {
   /// Inserts or selects a directive according to its structural location.
   ///
   /// Existing header directives are not duplicated: their value is selected
@@ -321,25 +294,18 @@ final class SourceEditor {
   bool _endsWithNewline(String source) => source.endsWith('\n') || source.endsWith('\r');
 }
 
-final class _SourceLine {
-  const _SourceLine({required this.start, required this.content, required this.lineEnding});
-
-  final int start;
-
-  final String content;
-
-  final String lineEnding;
-
+final class const _SourceLine({
+  required final int start,
+  required final String content,
+  required final String lineEnding,
+}) {
   int get contentEnd => start + content.length;
 
   int get end => contentEnd + lineEnding.length;
 }
 
-final class _DirectiveMatch {
-  const _DirectiveMatch({required this.type, required this.valueStart, required this.valueEnd});
-
-  final DirectiveType type;
-
-  final int valueStart;
-  final int valueEnd;
-}
+final class const _DirectiveMatch({
+  required final DirectiveType type,
+  required final int valueStart,
+  required final int valueEnd,
+});

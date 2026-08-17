@@ -15,34 +15,28 @@
 ///   }
 /// }
 /// ```
-sealed class Result<T> {
-  const Result();
-
+sealed class const Result<T>() {
   /// Creates a successful [Result], completed with the specified [value].
-  const factory Result.ok(T value) = Ok._;
+  const factory ok(T value) = Ok._;
 
   /// Creates an error [Result], completed with the specified [error].
-  const factory Result.error(Exception error) = Error._;
+  const factory error(Exception error) = Error._;
 }
 
 /// Successful operation result.
-final class Ok<T> extends Result<T> {
-  const Ok._(this.value);
-
+final class const Ok<T>._(
   /// Returned operation value.
-  final T value;
-
+  final T value,
+) extends Result<T> {
   @override
   String toString() => 'Result<$T>.ok($value)';
 }
 
 /// Failed operation result.
-final class Error<T> extends Result<T> {
-  const Error._(this.error);
-
+final class const Error<T>._(
   /// Error captured from the operation.
-  final Exception error;
-
+  final Exception error,
+) extends Result<T> {
   @override
   String toString() => 'Result<$T>.error($error)';
 }

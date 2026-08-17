@@ -7,8 +7,9 @@ import 'package:atril/domain/models/persistence/song_file.dart';
 import 'package:atril/domain/models/song/song.dart';
 import 'package:flutter/foundation.dart';
 
-final class WorkspaceViewModel extends ChangeNotifier {
-  WorkspaceViewModel({required this._songRepository, required this._filename}) : _source = '' {
+final class WorkspaceViewModel({required final SongRepository _songRepository, required var String _filename})
+    extends ChangeNotifier {
+  this : _source = '' {
     load = Command0(_load)..execute();
 
     saveSong = Command0(_saveSong);
@@ -16,14 +17,11 @@ final class WorkspaceViewModel extends ChangeNotifier {
     deleteSong = Command0(_deleteSong);
   }
 
-  final SongRepository _songRepository;
-
   late final Command0<void> load;
   late final Command0<void> saveSong;
   late final Command1<void, String> renameSongFilename;
   late final Command0<void> deleteSong;
 
-  String _filename;
   String _source;
 
   String? _cachedSource;

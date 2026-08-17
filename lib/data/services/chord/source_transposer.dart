@@ -10,10 +10,7 @@ import 'package:atril/domain/models/song/directive_type.dart';
 /// Source formatting and line endings are retained, making this service
 /// suitable for editor operations where re-encoding the complete parsed song
 /// would otherwise normalize the document.
-final class SourceTransposer {
-  /// Creates a stateless source transposer.
-  const SourceTransposer();
-
+final class const SourceTransposer() {
   final _songTransposer = const SongTransposer();
 
   /// Transposes every valid inline chord and supported key directive in

@@ -12,75 +12,43 @@ typedef ToolbarSeparatorBuilder = Widget Function(BuildContext context, Axis dir
 
 typedef ToolbarIconButtonBuilder = Widget Function(BuildContext context, ToolbarIconButton item);
 
-sealed class ToolbarItem {
-  const ToolbarItem({this.key});
+sealed class const ToolbarItem({final Key? key});
 
-  final Key? key;
-}
+class ToolbarSeparator extends ToolbarItem;
 
-class ToolbarSeparator extends ToolbarItem {}
+class const ToolbarIconButton({
+  super.key,
+  final bool animate = false,
+  required final VoidCallback? onPressed,
+  required final IconData icon,
+  final IconData? selectedIcon,
+  final int? badgeCount,
+  final bool isSelected = false,
+  required final String label,
+}) extends ToolbarItem;
 
-class ToolbarIconButton extends ToolbarItem {
-  const ToolbarIconButton({
-    super.key,
-    this.animate = false,
-    required this.onPressed,
-    required this.icon,
-    this.selectedIcon,
-    this.badgeCount,
-    this.isSelected = false,
-    required this.label,
-  });
+class const ToolbarCollapsibleItem({
+  super.key,
+  super.animate = false,
+  required super.onPressed,
+  required super.icon,
+  super.selectedIcon,
+  super.badgeCount,
+  super.isSelected = false,
+  required super.label,
+}) extends ToolbarIconButton;
 
-  final bool animate;
-
-  final VoidCallback? onPressed;
-
-  final IconData icon;
-  final IconData? selectedIcon;
-
-  final int? badgeCount;
-
-  final bool isSelected;
-
-  final String label;
-}
-
-class ToolbarCollapsibleItem extends ToolbarIconButton {
-  const ToolbarCollapsibleItem({
-    super.key,
-    super.animate = false,
-    required super.onPressed,
-    required super.icon,
-    super.selectedIcon,
-    super.badgeCount,
-    super.isSelected = false,
-    required super.label,
-  });
-}
-
-class Toolbar extends StatelessWidget {
-  const Toolbar({
-    super.key,
-    this.direction = .horizontal,
-    this.menuAnchorOffset,
-    this.showFab = false,
-    this.floatingActionButton,
-    this.separatorBuilder = _buildSeparator,
-    this.iconButtonBuilder = _buildIconButton,
-    required this.children,
-  }) : assert(!showFab || floatingActionButton != null);
-
-  final Axis direction;
-  final Offset? menuAnchorOffset;
-
-  final bool showFab;
-  final Widget? floatingActionButton;
-
-  final ToolbarSeparatorBuilder separatorBuilder;
-  final ToolbarIconButtonBuilder iconButtonBuilder;
-
-  final List<ToolbarItem> children;
+class const Toolbar({
+  super.key,
+  final Axis direction = .horizontal,
+  final Offset? menuAnchorOffset,
+  final bool showFab = false,
+  final Widget? floatingActionButton,
+  final ToolbarSeparatorBuilder separatorBuilder = _buildSeparator,
+  final ToolbarIconButtonBuilder iconButtonBuilder = _buildIconButton,
+  required final List<ToolbarItem> children,
+}) extends StatelessWidget {
+  this : assert(!showFab || floatingActionButton != null);
 
   static Widget _buildSeparator(BuildContext context, Axis direction, ToolbarSeparator item) {
     return SizedBox(
@@ -163,26 +131,14 @@ class Toolbar extends StatelessWidget {
   }
 }
 
-class _BottomToolbar extends StatefulWidget {
-  const _BottomToolbar({
-    required this.shouldCollapse,
-    required this.direction,
-    this.menuAnchorOffset,
-    required this.separatorBuilder,
-    required this.iconButtonBuilder,
-    required this.children,
-  });
-
-  final bool shouldCollapse;
-
-  final Axis direction;
-  final Offset? menuAnchorOffset;
-
-  final ToolbarSeparatorBuilder separatorBuilder;
-  final ToolbarIconButtonBuilder iconButtonBuilder;
-
-  final List<ToolbarItem> children;
-
+class const _BottomToolbar({
+  required final bool shouldCollapse,
+  required final Axis direction,
+  final Offset? menuAnchorOffset,
+  required final ToolbarSeparatorBuilder separatorBuilder,
+  required final ToolbarIconButtonBuilder iconButtonBuilder,
+  required final List<ToolbarItem> children,
+}) extends StatefulWidget {
   @override
   State<_BottomToolbar> createState() => _BottomToolbarState();
 }
@@ -329,21 +285,12 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
   }
 }
 
-class _CollapsingChild extends StatelessWidget {
-  const _CollapsingChild({
-    required this.direction,
-    required this.active,
-    required this.visibility,
-    required this.child,
-  });
-
-  final Axis direction;
-
-  final bool active;
-  final double visibility;
-
-  final Widget child;
-
+class const _CollapsingChild({
+  required final Axis direction,
+  required final bool active,
+  required final double visibility,
+  required final Widget child,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
@@ -364,14 +311,11 @@ class _CollapsingChild extends StatelessWidget {
   }
 }
 
-class _OverflowMenuButton extends StatelessWidget {
-  const _OverflowMenuButton({required this.direction, this.menuAnchorOffset, required this.items});
-
-  final Axis direction;
-  final Offset? menuAnchorOffset;
-
-  final List<ToolbarCollapsibleItem> items;
-
+class const _OverflowMenuButton({
+  required final Axis direction,
+  final Offset? menuAnchorOffset,
+  required final List<ToolbarCollapsibleItem> items,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;

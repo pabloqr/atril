@@ -7,9 +7,7 @@ import 'package:atril/domain/models/chord/note.dart';
 
 const keySignatureCodec = KeySignatureCodec();
 
-final class KeySignatureCodec extends Codec<KeySignature, String> {
-  const KeySignatureCodec();
-
+final class const KeySignatureCodec() extends Codec<KeySignature, String> {
   @override
   KeySignatureEncoder get encoder => const KeySignatureEncoder();
 
@@ -17,16 +15,12 @@ final class KeySignatureCodec extends Codec<KeySignature, String> {
   KeySignatureDecoder get decoder => const KeySignatureDecoder();
 }
 
-final class KeySignatureEncoder extends Converter<KeySignature, String> {
-  const KeySignatureEncoder();
-
+final class const KeySignatureEncoder() extends Converter<KeySignature, String> {
   @override
   String convert(KeySignature key) => key.toString();
 }
 
-final class KeySignatureDecoder extends Converter<String, KeySignature> {
-  const KeySignatureDecoder();
-
+final class const KeySignatureDecoder() extends Converter<String, KeySignature> {
   @override
   KeySignature convert(String input) {
     final match = Patterns.key.firstMatch(input);

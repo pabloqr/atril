@@ -33,9 +33,7 @@ typedef CommandAction3<T, A, B, C> = Future<Result<T>> Function(A, B, C);
 /// Actions must return a [Result].
 ///
 /// Consume the action result by listening to changes, then call to [clearResult] when the state is consumed.
-abstract class Command<T> extends ChangeNotifier {
-  Command();
-
+abstract class Command<T>() extends ChangeNotifier {
   bool _running = false;
 
   Result<T>? _result;
@@ -79,12 +77,7 @@ abstract class Command<T> extends ChangeNotifier {
 
 /// [Command] without arguments.
 /// Takes a [CommandAction0] as action.
-class Command0<T> extends Command<T> {
-  /// Creates a [Command0] with the provided [CommandAction0].
-  Command0(this._action);
-
-  final CommandAction0<T> _action;
-
+class Command0<T>(final CommandAction0<T> _action) extends Command<T> {
   /// Executes the action.
   Future<void> execute() async {
     await _execute(_action);
@@ -93,12 +86,7 @@ class Command0<T> extends Command<T> {
 
 /// [Command] with one argument.
 /// Takes a [CommandAction1] as action.
-class Command1<T, A> extends Command<T> {
-  /// Creates a [Command1] with the provided [CommandAction1].
-  Command1(this._action);
-
-  final CommandAction1<T, A> _action;
-
+class Command1<T, A>(final CommandAction1<T, A> _action) extends Command<T> {
   /// Executes the action.
   Future<void> execute(A arg0) async {
     await _execute(() => _action(arg0));
@@ -107,12 +95,7 @@ class Command1<T, A> extends Command<T> {
 
 /// [Command] with two arguments.
 /// Takes a [CommandAction2] as action.
-class Command2<T, A, B> extends Command<T> {
-  /// Creates a [Command2] with the provided [CommandAction2].
-  Command2(this._action);
-
-  final CommandAction2<T, A, B> _action;
-
+class Command2<T, A, B>(final CommandAction2<T, A, B> _action) extends Command<T> {
   /// Executes the action.
   Future<void> execute(A arg0, B arg1) async {
     await _execute(() => _action(arg0, arg1));
@@ -121,12 +104,7 @@ class Command2<T, A, B> extends Command<T> {
 
 /// [Command] with two arguments.
 /// Takes a [CommandAction3] as action.
-class Command3<T, A, B, C> extends Command<T> {
-  /// Creates a [Command3] with the provided [CommandAction3].
-  Command3(this._action);
-
-  final CommandAction3<T, A, B, C> _action;
-
+class Command3<T, A, B, C>(final CommandAction3<T, A, B, C> _action) extends Command<T> {
   /// Executes the action.
   Future<void> execute(A arg0, B arg1, C arg2) async {
     await _execute(() => _action(arg0, arg1, arg2));

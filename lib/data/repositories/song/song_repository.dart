@@ -30,16 +30,13 @@ abstract final class SongRepository {
 }
 
 /// File-backed [SongRepository] using a [PersistenceService].
-final class SongRepositoryImpl implements SongRepository {
+final class SongRepositoryImpl({
+  required final PersistenceService _service,
+  final String songDirPath = Constants.songDirPath,
+}) implements SongRepository {
   final _log = Logger('SongRepository');
 
-  SongRepositoryImpl({required this._service, this.songDirPath = Constants.songDirPath});
-
   static final RegExp _safeNamePattern = RegExp(r'^[A-Za-z0-9_-]+$');
-
-  final PersistenceService _service;
-
-  final String songDirPath;
 
   @override
   Future<Result<bool>> existsSong(String filename) async {

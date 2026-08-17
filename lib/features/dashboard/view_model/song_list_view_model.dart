@@ -9,8 +9,8 @@ import 'package:atril/domain/models/settings/app_settings.dart';
 import 'package:atril/domain/models/song.dart';
 import 'package:flutter/foundation.dart';
 
-final class SongListViewModel extends ChangeNotifier {
-  SongListViewModel({required this._songRepository}) {
+final class SongListViewModel({required final SongRepository _songRepository}) extends ChangeNotifier {
+  this {
     load = Command0(_load)..execute();
 
     saveSong = Command2(_saveSong);
@@ -53,8 +53,6 @@ final class SongListViewModel extends ChangeNotifier {
           '[B7]Turn it around and [A]play it [E]again',
     ),
   ];
-
-  final SongRepository _songRepository;
 
   late final Command0<void> load;
   late final Command2<void, String, String> saveSong;

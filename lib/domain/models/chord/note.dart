@@ -7,7 +7,13 @@ import 'package:atril/domain/models/chord/note_letter.dart';
 /// natural, or sharp accidental. Spelling remains significant: `C#` and `Db`
 /// share a [semitone] but are different values. This distinction is required
 /// for interval-aware transposition and faithful chord serialization.
-enum Note {
+enum Note(
+  /// The diatonic note name.
+  final NoteLetter letter,
+
+  /// The accidental modifying [letter].
+  final Accidental accidental,
+) {
   cFlat(NoteLetter.c, Accidental.flat),
   c(NoteLetter.c, Accidental.natural),
   cSharp(NoteLetter.c, Accidental.sharp),
@@ -35,15 +41,6 @@ enum Note {
   bFlat(NoteLetter.b, Accidental.flat),
   b(NoteLetter.b, Accidental.natural),
   bSharp(NoteLetter.b, Accidental.sharp);
-
-  /// Creates a supported note with the given spelling.
-  const Note(this.letter, this.accidental);
-
-  /// The diatonic note name.
-  final NoteLetter letter;
-
-  /// The accidental modifying [letter].
-  final Accidental accidental;
 
   static List<Note> get sharps => List.unmodifiable([c, cSharp, d, dSharp, e, f, fSharp, g, gSharp, a, aSharp, b]);
 

@@ -5,19 +5,16 @@ import 'package:atril/domain/models/chord/note.dart';
 /// [extension] is intentionally stored as source notation rather than parsed
 /// harmony. This preserves suffixes such as `m7`, `sus4`, or `add9` without
 /// requiring the domain model to understand every possible chord vocabulary.
-final class Chord {
-  /// Creates a chord with the required [root].
-  const Chord({required this.root, this.extension, this.bass});
-
+final class const Chord({
   /// The note on which the chord is built.
-  final Note root;
+  required final Note root,
 
   /// The uninterpreted chord suffix, excluding [root] and [bass].
-  final String? extension;
+  final String? extension,
 
   /// The optional slash-chord bass note.
-  final Note? bass;
-
+  final Note? bass,
+}) {
   @override
   String toString() => '$root${extension ?? ''}${bass == null ? '' : '/$bass'}';
 }

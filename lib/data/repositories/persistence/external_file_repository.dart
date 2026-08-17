@@ -14,11 +14,7 @@ abstract final class ExternalFileRepository {
 }
 
 /// [ExternalFileRepository] backed by a platform [FilePickerService].
-final class ExternalFileRepositoryImpl implements ExternalFileRepository {
-  ExternalFileRepositoryImpl({required this._service});
-
-  final FilePickerService _service;
-
+final class ExternalFileRepositoryImpl({required final FilePickerService _service}) implements ExternalFileRepository {
   @override
   Future<Result<SongFile?>> importFile() async {
     try {

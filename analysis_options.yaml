@@ -32,7 +32,6 @@ linter:
     - empty_container_bodies
     - initialize_in_field_declaration
     - invalid_case_patterns
-    - one_member_abstracts
     - only_throw_errors
     - omit_local_variable_types
     - prefer_final_fields

@@ -20,9 +20,7 @@ const SongCodec songCodec = SongCodec();
 
 /// A [Codec] for encoding and decoding the document-oriented subset of
 /// ChordPro used by Atril.
-final class SongCodec extends Codec<Song, String> {
-  const SongCodec();
-
+final class const SongCodec() extends Codec<Song, String> {
   @override
   Converter<String, Song> get decoder => const _SongDecoder();
 
@@ -31,9 +29,7 @@ final class SongCodec extends Codec<Song, String> {
 }
 
 /// Decodes ChordPro source text into a [Song].
-final class _SongDecoder extends Converter<String, Song> {
-  const _SongDecoder();
-
+final class const _SongDecoder() extends Converter<String, Song> {
   /// Converts [input] into source-ordered song lines and diagnostics.
   ///
   /// Line endings are normalized in the model. Malformed directives and inline
@@ -253,9 +249,7 @@ final class _SongDecoder extends Converter<String, Song> {
 }
 
 /// Encodes a [Song] to canonical ChordPro source text.
-final class _SongEncoder extends Converter<Song, String> {
-  const _SongEncoder();
-
+final class const _SongEncoder() extends Converter<Song, String> {
   /// Converts [input] to normalized source using LF line separators.
   ///
   /// Parser issues are not serialized because they describe the source rather

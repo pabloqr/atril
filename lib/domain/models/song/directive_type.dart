@@ -6,7 +6,10 @@ enum DirectiveLocation { header, body, none }
 /// Each value records its preferred [location]. Unrecognized names are mapped
 /// to [unknown] so source-oriented code can preserve them without treating them
 /// as supported metadata.
-enum DirectiveType {
+enum DirectiveType(
+  /// The structural region used when inserting this directive.
+  final DirectiveLocation location,
+) {
   title(DirectiveLocation.header),
   artist(DirectiveLocation.header),
   key(DirectiveLocation.header),
@@ -14,14 +17,6 @@ enum DirectiveType {
   comment(DirectiveLocation.body),
 
   unknown(DirectiveLocation.none);
-
-  //------------------------------------------------------------------------------------------------------------------//
-
-  /// Creates a directive type associated with [location].
-  const DirectiveType(this.location);
-
-  /// The structural region used when inserting this directive.
-  final DirectiveLocation location;
 
   //------------------------------------------------------------------------------------------------------------------//
 

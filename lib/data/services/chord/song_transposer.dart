@@ -10,10 +10,7 @@ import 'package:atril/domain/models/song.dart';
 /// transposer first derives the target key when the source song has one, then
 /// uses that key to choose consistent enharmonic spellings for chord roots and
 /// slash bass notes.
-final class SongTransposer {
-  /// Creates a stateless transposer.
-  const SongTransposer();
-
+final class const SongTransposer() {
   /// Returns a song whose lyric-line chord anchors are transposed.
   ///
   /// Lyric text, line order, anchor offsets, non-key directives, and parser

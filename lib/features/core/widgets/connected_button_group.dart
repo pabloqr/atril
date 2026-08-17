@@ -5,52 +5,42 @@ import 'package:flutter/widget_previews.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Data describing a button of a [ConnectedButtonGroup].
-class ButtonGroupItem<T> {
-  /// Construct a [ButtonGroupItem].
-  ///
-  /// One of [icon] or [label] must be non-null.
-  const ButtonGroupItem({required this.value, this.icon, this.label, this.tooltip, this.enabled = true})
-    : assert(icon != null || label != null);
-
+class const ButtonGroupItem<T>({
   /// Value used to identify the button.
   ///
   /// This value must be unique across all buttons in a [ConnectedButtonGroup].
-  final T value;
+  required final T value,
 
   /// Optional icon displayed in the button.
-  final Widget? icon;
+  final Widget? icon,
 
   /// Optional label displayed in the button.
-  final Widget? label;
+  final Widget? label,
 
   /// Optional tooltip for the button.
-  final String? tooltip;
+  final String? tooltip,
 
   /// Determines if the button is available for selection.
-  final bool enabled;
+  final bool enabled = true,
+}) {
+  /// Construct a [ButtonGroupItem].
+  ///
+  /// One of [icon] or [label] must be non-null.
+  this : assert(icon != null || label != null);
 }
 
-class ConnectedButtonGroup<T> extends StatefulWidget {
-  const ConnectedButtonGroup({
-    super.key,
-    required this.buttons,
-    required this.selected,
-    this.onSelectionChanged,
-    this.multiSelectionEnabled = false,
-    this.emptySelectionAllowed = false,
-  }) : assert(buttons.length > 0),
-       assert(selected.length > 0 || emptySelectionAllowed),
-       assert(selected.length < 2 || multiSelectionEnabled);
-
-  final List<ButtonGroupItem<T>> buttons;
-
-  final Set<T> selected;
-
-  final void Function(Set<T>)? onSelectionChanged;
-
-  final bool multiSelectionEnabled;
-
-  final bool emptySelectionAllowed;
+class const ConnectedButtonGroup<T>({
+  super.key,
+  required final List<ButtonGroupItem<T>> buttons,
+  required final Set<T> selected,
+  final void Function(Set<T>)? onSelectionChanged,
+  final bool multiSelectionEnabled = false,
+  final bool emptySelectionAllowed = false,
+}) extends StatefulWidget {
+  this
+    : assert(buttons.length > 0),
+      assert(selected.length > 0 || emptySelectionAllowed),
+      assert(selected.length < 2 || multiSelectionEnabled);
 
   @override
   State<ConnectedButtonGroup<T>> createState() => _ConnectedButtonGroupState<T>();

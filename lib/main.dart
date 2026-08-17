@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
+/// Initializes application storage and dependency providers, then starts Atril.
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final baseDirectory = await getApplicationDocumentsDirectory();
@@ -19,9 +20,8 @@ void main() async {
   );
 }
 
-class AtrilApp extends StatelessWidget {
-  const AtrilApp({super.key});
-
+/// The root Atril application widget.
+class const AtrilApp({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(

@@ -6,19 +6,17 @@ import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/foundation.dart';
 
-final class EditorViewModel extends ChangeNotifier {
-  EditorViewModel({required this._workspaceViewModel, required this._sourceEditor, required this._sourceTransposer})
-    : _knownSource = _workspaceViewModel.source {
+final class EditorViewModel({
+  required final WorkspaceViewModel _workspaceViewModel,
+  required final SourceEditor _sourceEditor,
+  required final SourceTransposer _sourceTransposer,
+}) extends ChangeNotifier {
+  this {
     _workspaceViewModel.addListener(_handleWorkspaceChanged);
   }
 
-  final WorkspaceViewModel _workspaceViewModel;
-
-  final SourceEditor _sourceEditor;
-  final SourceTransposer _sourceTransposer;
-
   bool _updatingWorkspace = false;
-  String _knownSource;
+  String _knownSource = _workspaceViewModel.source;
 
   int? _activeIssueIndex;
 

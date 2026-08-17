@@ -1,5 +1,11 @@
 /// A natural note name and its position in chromatic and diatonic space.
-enum NoteLetter {
+enum NoteLetter(
+  /// The pitch class of the natural note, where C is zero.
+  final int naturalSemitone,
+
+  /// The zero-based position in the C-D-E-F-G-A-B cycle.
+  final int diatonicIndex,
+) {
   c(0, 0),
   d(2, 1),
   e(4, 2),
@@ -7,15 +13,6 @@ enum NoteLetter {
   g(7, 4),
   a(9, 5),
   b(11, 6);
-
-  /// Creates a note letter at [naturalSemitone] and [diatonicIndex].
-  const NoteLetter(this.naturalSemitone, this.diatonicIndex);
-
-  /// The pitch class of the natural note, where C is zero.
-  final int naturalSemitone;
-
-  /// The zero-based position in the C-D-E-F-G-A-B cycle.
-  final int diatonicIndex;
 
   /// Returns the note letter [steps] forward in the diatonic cycle.
   ///
