@@ -24,12 +24,10 @@ abstract final class PersistenceService {
 }
 
 /// Local filesystem implementation rooted at [baseDirPath].
-final class LocalPersistenceService implements PersistenceService {
-  LocalPersistenceService({required this.baseDirPath});
-
+final class LocalPersistenceService({
   /// Absolute platform directory used as the root for all relative paths.
-  final String baseDirPath;
-
+  required final String baseDirPath,
+}) implements PersistenceService {
   @override
   Future<Directory> createDirectory(String path) async {
     final dir = Directory(_fullDirectoryPath(path));

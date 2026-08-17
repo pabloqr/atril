@@ -1,7 +1,9 @@
 import 'package:atril/core/utils/exceptions.dart';
 import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/domain/models/chord.dart';
+import 'package:atril/domain/models/chord/key_mode.dart';
 import 'package:atril/domain/models/chord/key_signature.dart';
+import 'package:atril/domain/models/chord/resolved_transposition.dart';
 import 'package:atril/domain/models/song.dart';
 
 /// Applies chromatic transposition requests to notes, chords, and parsed songs.
@@ -10,17 +12,35 @@ import 'package:atril/domain/models/song.dart';
 /// transposer first derives the target key when the source song has one, then
 /// uses that key to choose consistent enharmonic spellings for chord roots and
 /// slash bass notes.
-final class SongTransposer {
-  /// Creates a stateless transposer.
-  const SongTransposer();
+final class const SongTransposer() {
+  /// Converts [transposition] into the diatonic and chromatic movement used by
+  /// the transposition operations.
+  ///
+  /// When [sourceKey] is available, the result includes an enharmonically
+  /// appropriate `targetKey`. A `ToKey` request requires
+  /// [sourceKey] and throws [TranspositionException] when it is absent.
+  ResolvedTransposition resolve(ChromaticTransposition transposition, {KeySignature? sourceKey}) {
+    return switch (transposition) {
+      BySemitones(:final semitones, :final pitchPreference) => _resolveSemitones(semitones, pitchPreference, sourceKey),
+      ToKey(:final key) => _resolveToKey(key, sourceKey),
+      ByInterval(:final interval, :final direction, :final pitchPreference) => _resolveInterval(
+        interval,
+        direction,
+        pitchPreference,
+        sourceKey,
+      ),
+    };
+  }
 
   /// Returns a song whose lyric-line chord anchors are transposed.
   ///
   /// Lyric text, line order, anchor offsets, non-key directives, and parser
-  /// issues are preserved. When the song has a key, its key directive is
-  /// replaced with the result of [transposeKey].
+  /// issues are preserved. When the song has a key, the returned song uses the
+  /// resolved destination key.
   Song transposeSong(Song song, ChromaticTransposition transposition) {
-    final transposedKey = transposeKey(song.metadata.key, transposition);
+    final resolvedTransposition = resolve(transposition, sourceKey: song.metadata.key);
+
+    // final transposedKey = transposeKey(song.metadata.key, transposition);
     final transposedLines = song.lines
         .map(
           (line) => switch (line) {
@@ -29,7 +49,7 @@ final class SongTransposer {
               chords: chords
                   .map(
                     (anchor) => ChordAnchor(
-                      chord: transposeChord(anchor.chord, transposition, transposedKey),
+                      chord: transposeChordResolved(anchor.chord, resolvedTransposition),
                       offset: anchor.offset,
                     ),
                   )
@@ -40,138 +60,260 @@ final class SongTransposer {
         )
         .toList();
 
-    return Song(lines: transposedLines, issues: song.issues).withKey(transposedKey);
-  }
-
-  /// Returns the target key produced by [transposition].
-  ///
-  /// Returns `null` when [key] is absent. Semitone transposition preserves the
-  /// key mode and selects an enharmonic key according to the request's pitch
-  /// preference. Other request modes may throw [UnimplementedError] until their
-  /// algorithms are implemented.
-  KeySignature? transposeKey(KeySignature? key, ChromaticTransposition transposition) {
-    if (key == null) return null;
-
-    return switch (transposition) {
-      BySemitones() => _transposeKeyBySemitones(key, transposition),
-      ToKey() => _transposeKeyToKey(key, transposition),
-      ByInterval() => _transposeKeyByInterval(key, transposition),
-    };
+    return Song(lines: transposedLines, issues: song.issues).withKey(resolvedTransposition.targetKey);
   }
 
   /// Transposes a chord root and optional slash bass while preserving its
   /// extension.
   ///
-  /// When provided, [targetKey] determines the enharmonic spelling of notes.
-  Chord transposeChord(Chord chord, ChromaticTransposition transposition, [KeySignature? targetKey]) {
+  /// When provided, `sourceKey` determines the enharmonic spelling of notes.
+  Chord transposeChord(Chord chord, ChromaticTransposition transposition, [KeySignature? sourceKey]) {
+    return transposeChordResolved(chord, resolve(transposition, sourceKey: sourceKey));
+  }
+
+  /// Transposes [chord] using a previously [resolve]d [transposition].
+  ///
+  /// This avoids resolving the same request repeatedly when several chords
+  /// share a source key. The chord extension is retained verbatim; only the
+  /// root and optional slash bass are transposed.
+  Chord transposeChordResolved(Chord chord, ResolvedTransposition transposition) {
     return Chord(
-      root: transposeNote(chord.root, transposition, targetKey),
+      root: _transposeNoteResolved(chord.root, transposition),
       extension: chord.extension,
-      bass: chord.bass != null ? transposeNote(chord.bass!, transposition, targetKey) : null,
+      bass: chord.bass == null ? null : _transposeNoteResolved(chord.bass!, transposition),
     );
   }
 
   /// Transposes [note] according to [transposition].
   ///
-  /// When [targetKey] is available, its accidental family takes precedence over
+  /// When `sourceKey` is available, its accidental family takes precedence over
   /// the fallback pitch preference carried by the request.
   ///
-  /// Request modes whose algorithms are not yet available may throw
-  /// [UnimplementedError]. The current interval implementation may throw
-  /// [TranspositionException] when the requested spelling would require an
-  /// unsupported accidental.
-  Note transposeNote(Note note, ChromaticTransposition transposition, [KeySignature? targetKey]) {
-    return switch (transposition) {
-      BySemitones() => _transposeNoteBySemitones(note, transposition, targetKey),
-      ToKey() => _transposeNoteToKey(note, transposition),
-      ByInterval() => _transposesNoteByInterval(note, transposition, targetKey),
-    };
+  /// A `ToKey` request without a source key throws [TranspositionException].
+  /// The transposer uses an enharmonic fallback when the requested spelling
+  /// would otherwise need an unsupported accidental.
+  Note transposeNote(Note note, ChromaticTransposition transposition, [KeySignature? sourceKey]) {
+    return _transposeNoteResolved(note, resolve(transposition, sourceKey: sourceKey));
   }
 
-  KeySignature _transposeKeyBySemitones(KeySignature key, BySemitones transposition) {
-    final targetSemitone = (key.tonic.semitone + transposition.semitones) % 12;
-
-    final candidateKeys = KeySignature.values
-        .where((k) => k.mode == key.mode && k.tonic.semitone == targetSemitone)
-        .toList();
-
-    if (candidateKeys.length == 1) return candidateKeys.single;
-
-    final accidentalFamily = switch (transposition.pitchPreference) {
-      PitchPreference.sharps => Accidental.sharp,
-      PitchPreference.flats => Accidental.flat,
-      PitchPreference.automatic => key.accidentalFamily,
-    };
-
-    if (accidentalFamily != Accidental.natural) {
-      final familyKeys = candidateKeys.where((k) => k.accidentalFamily == accidentalFamily).toList();
-      if (familyKeys.isNotEmpty) return familyKeys.single;
+  /// Resolves a semitone displacement, deriving a target key when possible.
+  ///
+  /// Without [sourceKey], the canonical diatonic distance and the requested
+  /// accidental family determine the spelling preference.
+  ResolvedTransposition _resolveSemitones(int semitones, PitchPreference pitchPreference, KeySignature? sourceKey) {
+    if (sourceKey == null) {
+      return ResolvedTransposition(
+        diatonicSteps: _canonicalDiatonicSteps(semitones, pitchPreference),
+        chromaticSemitones: semitones,
+        preferredAccidentalFamily: _preferredFamily(pitchPreference),
+      );
     }
 
-    final minAccidentalCount = candidateKeys.map((key) => key.accidentalCount).reduce((a, b) => a < b ? a : b);
-    final minAccidentalCountKeys = candidateKeys.where((key) => key.accidentalCount == minAccidentalCount).toList();
+    final targetKey = _keyFor(
+      mode: sourceKey.mode,
+      semitone: sourceKey.tonic.semitone + semitones,
+      preference: pitchPreference,
+      fallbackFamily: sourceKey.accidentalFamily,
+    );
 
-    return minAccidentalCountKeys.firstWhere(
-      (key) => key.accidentalFamily == Accidental.sharp,
-      orElse: () => minAccidentalCountKeys.first,
+    return _betweenKeysWithChromaticDistance(sourceKey, targetKey, semitones);
+  }
+
+  /// Resolves the closest signed movement from [sourceKey] to [targetKey].
+  ///
+  /// The chromatic distance is normalized to at most six semitones in either
+  /// direction. A target-key request cannot be resolved without a source key.
+  ResolvedTransposition _resolveToKey(KeySignature targetKey, KeySignature? sourceKey) {
+    if (sourceKey == null) {
+      throw const TranspositionException('No se puede transponer a una tonalidad sin una tonalidad de origen.');
+    }
+
+    var diatonicSteps = targetKey.tonic.letter.diatonicIndex - sourceKey.tonic.letter.diatonicIndex;
+    var chromaticSemitones = targetKey.tonic.semitone - sourceKey.tonic.semitone;
+
+    while (chromaticSemitones > 6) {
+      chromaticSemitones -= 12;
+      diatonicSteps -= 7;
+    }
+    while (chromaticSemitones < -6) {
+      chromaticSemitones += 12;
+      diatonicSteps += 7;
+    }
+
+    return ResolvedTransposition(
+      diatonicSteps: diatonicSteps,
+      chromaticSemitones: chromaticSemitones,
+      targetKey: targetKey,
+      preferredAccidentalFamily: targetKey.accidentalFamily,
     );
   }
 
-  KeySignature _transposeKeyToKey(KeySignature key, ToKey transposition) {
-    throw UnimplementedError();
+  /// Resolves a named interval into signed diatonic and chromatic distances.
+  ///
+  /// A source key, when present, is shifted by the chromatic distance to
+  /// derive a target key with the requested spelling preference.
+  ResolvedTransposition _resolveInterval(
+    Interval interval,
+    TransposeDirection direction,
+    PitchPreference preference,
+    KeySignature? sourceKey,
+  ) {
+    final chromaticSemitones = interval.semitones * direction.sign;
+    final diatonicSteps = interval.diatonicSteps * direction.sign;
+
+    final targetKey = sourceKey == null
+        ? null
+        : _keyFor(
+            mode: sourceKey.mode,
+            semitone: sourceKey.tonic.semitone + chromaticSemitones,
+            preference: preference,
+            fallbackFamily: sourceKey.accidentalFamily,
+          );
+
+    return ResolvedTransposition(
+      diatonicSteps: diatonicSteps,
+      chromaticSemitones: chromaticSemitones,
+      targetKey: targetKey,
+      preferredAccidentalFamily: targetKey?.accidentalFamily,
+    );
   }
 
-  KeySignature _transposeKeyByInterval(KeySignature key, ByInterval transposition) {
-    throw UnimplementedError();
+  /// Returns the accidental family explicitly requested by [preference].
+  ///
+  /// Automatic preference has no fixed family and is represented by `null`.
+  Accidental? _preferredFamily(PitchPreference preference) {
+    return switch (preference) {
+      PitchPreference.sharps => Accidental.sharp,
+      PitchPreference.flats => Accidental.flat,
+      PitchPreference.automatic => null,
+    };
   }
 
-  Note _transposeNoteBySemitones(Note note, BySemitones transposition, [KeySignature? targetKey]) {
-    final accidentalFamily =
-        targetKey?.accidentalFamily ??
-        switch (transposition.pitchPreference) {
-          PitchPreference.automatic => note.accidental,
-          PitchPreference.sharps => Accidental.sharp,
-          PitchPreference.flats => Accidental.flat,
-        };
+  /// Creates a transposition between two keys with [chromaticDistance].
+  ///
+  /// The supplied distance preserves octave displacement, while the key names
+  /// determine the diatonic letter movement and accidental family.
+  ResolvedTransposition _betweenKeysWithChromaticDistance(
+    KeySignature sourceKey,
+    KeySignature targetKey,
+    int chromaticDistance,
+  ) {
+    final tonicChromaticDifference = targetKey.tonic.semitone - sourceKey.tonic.semitone;
+    final octaves = (chromaticDistance - tonicChromaticDifference) ~/ 12;
 
-    final notes = switch (accidentalFamily) {
-      Accidental.flat => Note.flats,
-      _ => Note.sharps,
+    return ResolvedTransposition(
+      diatonicSteps: targetKey.tonic.letter.diatonicIndex - sourceKey.tonic.letter.diatonicIndex + (octaves * 7),
+      chromaticSemitones: chromaticDistance,
+      targetKey: targetKey,
+      preferredAccidentalFamily: targetKey.accidentalFamily,
+    );
+  }
+
+  /// Finds the supported key with [mode] and pitch class [semitone].
+  ///
+  /// It first honors [preference], using [fallbackFamily] for automatic
+  /// preference. If no matching spelling exists, it chooses the candidate with
+  /// the fewest accidentals.
+  KeySignature _keyFor({
+    required KeyMode mode,
+    required int semitone,
+    required PitchPreference preference,
+    required Accidental fallbackFamily,
+  }) {
+    final candidates = KeySignature.values.where((key) => key.mode == mode && key.tonic.semitone == semitone % 12);
+
+    final preferredFamily = switch (preference) {
+      PitchPreference.sharps => Accidental.sharp,
+      PitchPreference.flats => Accidental.flat,
+      PitchPreference.automatic => fallbackFamily,
     };
 
-    final semitone = (note.semitone + transposition.semitones) % notes.length;
-    return notes[semitone];
+    return candidates.firstWhere(
+      (key) => key.accidentalFamily == preferredFamily,
+      orElse: () =>
+          candidates.reduce((best, current) => current.accidentalCount < best.accidentalCount ? current : best),
+    );
   }
 
-  Note _transposeNoteToKey(Note note, ToKey transposition) {
-    throw UnimplementedError();
+  /// Returns the conventional diatonic movement for a semitone distance.
+  ///
+  /// The lookup favors sharps for automatic preference and includes whole
+  /// octaves in the resulting signed distance.
+  int _canonicalDiatonicSteps(int semitones, PitchPreference preference) {
+    final sign = semitones < 0 ? -1 : 1;
+    final magnitude = semitones.abs();
+    final octaves = magnitude ~/ 12;
+    final remainder = magnitude % 12;
+
+    final steps = switch (preference) {
+      PitchPreference.sharps || PitchPreference.automatic => const [0, 0, 1, 1, 2, 3, 3, 4, 4, 5, 5, 6][remainder],
+      PitchPreference.flats => const [0, 1, 1, 2, 2, 3, 4, 4, 5, 5, 6, 6][remainder],
+    };
+
+    return sign * ((octaves * 7) + steps);
   }
 
-  Note _transposesNoteByInterval(Note note, ByInterval transposition, [KeySignature? targetKey]) {
-    // TODO: Replace the temporary diatonic implementation with chromatic transposition.
+  /// Applies [transposition] to [note], preserving its intended letter where
+  /// the supported accidental set permits it.
+  ///
+  /// When the exact spelling requires an unsupported accidental, this method
+  /// delegates to [_clampEnharmonic] to select a simple equivalent.
+  Note _transposeNoteResolved(Note note, ResolvedTransposition transposition) {
+    final intendedLetter = note.letter.plusDiatonic(transposition.diatonicSteps);
 
-    final steps = transposition.interval.diatonicSteps;
-    final semitoneShift = transposition.interval.semitones * transposition.direction.sign;
+    final targetSemitone = (note.semitone + transposition.chromaticSemitones) % 12;
 
-    final newLetter = transposition.direction == TransposeDirection.up
-        ? note.letter.plusDiatonic(steps)
-        : note.letter.plusDiatonic(NoteLetter.values.length - steps);
+    final accidentalOffset = (targetSemitone - intendedLetter.naturalSemitone + 12) % 12;
 
-    final targetSemitone = (note.semitone + semitoneShift) % 12;
-
-    // Express the target relative to the destination natural note. Modulo 12
-    // represents a flat as 11, allowing the switch to stay pitch-class based.
-    final accidentalOffset = (targetSemitone - newLetter.naturalSemitone + 12) % 12;
-
-    final accidental = switch (accidentalOffset) {
+    final exactAccidental = switch (accidentalOffset) {
       0 => Accidental.natural,
       1 => Accidental.sharp,
       11 => Accidental.flat,
-      _ => throw TranspositionException(
-        'Transposing $note by ${transposition.interval} ${transposition.direction} requires an accidental outside the supported range (offset: $accidentalOffset).',
-      ),
+      _ => null,
     };
 
-    return Note.lookup[(newLetter, accidental)]!;
+    if (exactAccidental != null) {
+      return Note.lookup[(intendedLetter, exactAccidental)]!;
+    }
+
+    return _clampEnharmonic(targetSemitone, intendedLetter, transposition.preferredAccidentalFamily);
+  }
+
+  /// Selects the best supported spelling for [semitone].
+  ///
+  /// Candidates are ranked by [_enharmonicScore] to favor natural notes, the
+  /// requested accidental family, and proximity to [intendedLetter].
+  Note _clampEnharmonic(int semitone, NoteLetter intendedLetter, Accidental? preferredFamily) {
+    final candidates = Note.values.where((note) => note.semitone == semitone).toList()
+      ..sort((a, b) {
+        final scoreA = _enharmonicScore(a, intendedLetter, preferredFamily);
+        final scoreB = _enharmonicScore(b, intendedLetter, preferredFamily);
+
+        return scoreA.compareTo(scoreB);
+      });
+
+    if (candidates.isEmpty) {
+      throw TranspositionException('No existe una grafía simple para el semitono $semitone.');
+    }
+
+    return candidates.first;
+  }
+
+  /// Scores an enharmonic [candidate] for selection by [_clampEnharmonic].
+  ///
+  /// Lower scores favor natural notes, then [preferredFamily], then the note
+  /// letter nearest to [intendedLetter].
+  int _enharmonicScore(Note candidate, NoteLetter intendedLetter, Accidental? preferredFamily) {
+    final accidentalCost = candidate.accidental == Accidental.natural ? 0 : 100;
+
+    final familyCost =
+        preferredFamily == null || candidate.accidental == Accidental.natural || candidate.accidental == preferredFamily
+        ? 0
+        : 10;
+
+    final rawDistance = (candidate.letter.diatonicIndex - intendedLetter.diatonicIndex).abs();
+    final letterDistance = rawDistance < 4 ? rawDistance : 7 - rawDistance;
+
+    return accidentalCost + familyCost + letterDistance;
   }
 }

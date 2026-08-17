@@ -1,29 +1,18 @@
 import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
-class SongListTile extends StatefulWidget {
-  const SongListTile({
-    super.key,
-    required this.borderRadius,
-    required this.filename,
-    required this.song,
-    required this.onRenameTitle,
-    required this.onDelete,
-    required this.onRenameFile,
-  });
-
-  final BorderRadius borderRadius;
-
-  final String filename;
-  final Song song;
-
-  final void Function(String title) onRenameTitle;
-  final VoidCallback onDelete;
-  final void Function(String filename) onRenameFile;
-
+class const SongListTile({
+  super.key,
+  required final BorderRadius borderRadius,
+  required final String filename,
+  required final Song song,
+  required final void Function(String title) onRenameTitle,
+  required final VoidCallback onDelete,
+  required final void Function(String filename) onRenameFile,
+}) extends StatefulWidget {
   @override
   State<SongListTile> createState() => _SongListTileState();
 }

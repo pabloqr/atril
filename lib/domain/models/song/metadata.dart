@@ -12,7 +12,41 @@ import 'package:atril/domain/models/song/line.dart';
 /// This class interprets known directive names and stores unrecognized entries
 /// in [misc]. Validation of musical values and source-specific alias handling
 /// belongs in the parser or editing layer.
-final class Metadata {
+final class const Metadata._({
+  /// The song title, when known.
+  required final String? title,
+
+  /// The credited artist or performer, when known.
+  required final String? artist,
+
+  /// The musical key of the song, when known.
+  ///
+  /// The key is represented as a [Chord] so the model can reuse the chord
+  /// spelling already used elsewhere in the domain. This does not imply that
+  /// every chord extension is musically meaningful as a key; validation belongs
+  /// in the parser or editing layer.
+  required final KeySignature? key,
+
+  /// The capo fret number, when specified.
+  ///
+  /// This model does not enforce a valid range. Code that accepts user input or
+  /// parses external files should reject invalid fret numbers before creating
+  /// the metadata object.
+  required final int? capo,
+
+  /// Free-form comments associated with the song.
+  ///
+  /// Multiple comments are preserved in order.
+  required final List<String> comments,
+
+  /// Metadata entries that are not represented by the dedicated fields.
+  ///
+  /// Keys are normalized directive names. Values are lists so repeated
+  /// fields can be preserved without overwriting earlier values.
+  ///
+  /// The map and its value lists are immutable.
+  required final Map<String, List<String>> misc,
+}) {
   /// Creates a metadata object.
   ///
   /// Known directives are assigned to their dedicated fields using
@@ -22,7 +56,7 @@ final class Metadata {
   /// When the same single-value directive appears more than once, the first
   /// value that can be converted to the expected type wins. Later duplicate
   /// values are ignored for dedicated fields.
-  factory Metadata({List<DirectiveLine> directives = const []}) {
+  factory({List<DirectiveLine> directives = const []}) {
     String? title;
     String? artist;
     KeySignature? key;
@@ -64,49 +98,6 @@ final class Metadata {
       misc: Map.unmodifiable(misc.map((k, v) => MapEntry(k, List<String>.unmodifiable(v)))),
     );
   }
-
-  const Metadata._({
-    required this.title,
-    required this.artist,
-    required this.key,
-    required this.capo,
-    required this.comments,
-    required this.misc,
-  });
-
-  /// The song title, when known.
-  final String? title;
-
-  /// The credited artist or performer, when known.
-  final String? artist;
-
-  /// The musical key of the song, when known.
-  ///
-  /// The key is represented as a [Chord] so the model can reuse the chord
-  /// spelling already used elsewhere in the domain. This does not imply that
-  /// every chord extension is musically meaningful as a key; validation belongs
-  /// in the parser or editing layer.
-  final KeySignature? key;
-
-  /// The capo fret number, when specified.
-  ///
-  /// This model does not enforce a valid range. Code that accepts user input or
-  /// parses external files should reject invalid fret numbers before creating
-  /// the metadata object.
-  final int? capo;
-
-  /// Free-form comments associated with the song.
-  ///
-  /// Multiple comments are preserved in order.
-  final List<String> comments;
-
-  /// Metadata entries that are not represented by the dedicated fields.
-  ///
-  /// Keys are normalized directive names. Values are lists so repeated
-  /// fields can be preserved without overwriting earlier values.
-  ///
-  /// The map and its value lists are immutable.
-  final Map<String, List<String>> misc;
 
   static String? _stringValue(Object? value) => switch (value) {
     null => null,

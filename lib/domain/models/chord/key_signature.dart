@@ -2,7 +2,7 @@ import 'package:atril/domain/models/chord/accidental.dart';
 import 'package:atril/domain/models/chord/key_mode.dart';
 import 'package:atril/domain/models/chord/note.dart';
 
-enum KeySignature {
+enum KeySignature(final Note tonic, final KeyMode mode, final Accidental accidentalFamily, final int accidentalCount) {
   cMajor(Note.c, KeyMode.major, Accidental.natural, 0),
   aMinor(Note.a, KeyMode.minor, Accidental.natural, 0),
 
@@ -47,14 +47,6 @@ enum KeySignature {
 
   cFlatMajor(Note.cFlat, KeyMode.major, Accidental.flat, 7),
   aFlatMinor(Note.aFlat, KeyMode.minor, Accidental.flat, 7);
-
-  const KeySignature(this.tonic, this.mode, this.accidentalFamily, this.accidentalCount);
-
-  final Note tonic;
-  final KeyMode mode;
-
-  final Accidental accidentalFamily;
-  final int accidentalCount;
 
   static final lookup = Map<(Note, KeyMode), KeySignature>.unmodifiable({
     for (final key in values) (key.tonic, key.mode): key,

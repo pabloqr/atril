@@ -16,34 +16,24 @@ import 'package:atril/domain/models/song/parse_issue.dart';
 /// parsing, but it also means [metadata] is a snapshot: mutating nested objects
 /// inside existing line instances, if they are mutable, will not rebuild the
 /// metadata object.
-final class Song {
-  /// Creates a song from ordered logical [lines] and parser [issues].
-  ///
-  /// Directive lines are inspected to build [metadata]. The provided list is
-  /// copied into an unmodifiable list, so later mutations to the argument do
-  /// not change [lines]. The [Line] objects themselves are not deep-copied.
-  Song({List<Line> lines = const [], List<ParseIssue> issues = const []})
-    : lines = List.unmodifiable(lines),
-      issues = List.unmodifiable(issues),
-      metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList());
-
+final class Song({List<Line> lines = const [], List<ParseIssue> issues = const []}) {
   /// Metadata associated with the song.
   ///
   /// This is extracted from [DirectiveLine] entries in [lines] during
   /// construction.
-  final Metadata metadata;
+  final Metadata metadata = Metadata(directives: lines.whereType<DirectiveLine>().toList());
 
   /// The song body as ordered logical lines.
   ///
   /// The list is unmodifiable and preserves the order supplied to the
   /// constructor.
-  final List<Line> lines;
+  final List<Line> lines = List.unmodifiable(lines);
 
   /// Diagnostics associated with the source used to construct this song.
   ///
   /// The list is unmodifiable. Recoverable errors may coexist with parsed
   /// [lines], allowing consumers to show a partial preview.
-  final List<ParseIssue> issues;
+  final List<ParseIssue> issues = List.unmodifiable(issues);
 
   /// Creates a new song by replacing the supplied aggregate fields.
   ///

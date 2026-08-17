@@ -20,9 +20,7 @@ const SongCodec songCodec = SongCodec();
 
 /// A [Codec] for encoding and decoding the document-oriented subset of
 /// ChordPro used by Atril.
-final class SongCodec extends Codec<Song, String> {
-  const SongCodec();
-
+final class const SongCodec() extends Codec<Song, String> {
   @override
   Converter<String, Song> get decoder => const _SongDecoder();
 
@@ -31,9 +29,7 @@ final class SongCodec extends Codec<Song, String> {
 }
 
 /// Decodes ChordPro source text into a [Song].
-final class _SongDecoder extends Converter<String, Song> {
-  const _SongDecoder();
-
+final class const _SongDecoder() extends Converter<String, Song> {
   /// Converts [input] into source-ordered song lines and diagnostics.
   ///
   /// Line endings are normalized in the model. Malformed directives and inline
@@ -80,10 +76,25 @@ final class _SongDecoder extends Converter<String, Song> {
         final name = directive.namedGroup('key')!.trim();
         final rawValue = directive.namedGroup('value');
 
-        final value = switch (DirectiveType.lookup[name]) {
-          DirectiveType.key when rawValue != null => keySignatureCodec.decode(rawValue),
-          _ => rawValue,
-        };
+        Object? value;
+        switch (DirectiveType.lookup[name]) {
+          case DirectiveType.key when rawValue != null:
+            try {
+              value = keySignatureCodec.decode(rawValue);
+            } on FormatException catch (error) {
+              issues.add(
+                _malformedDirectiveIssue(
+                  message: error.message.toString(),
+                  sourceOffset: sourceOffset + openingIndex,
+                  lineIndex: lineIndex,
+                  position: openingIndex + 1,
+                  length: sourceLine.length - openingIndex,
+                ),
+              );
+            }
+          case _:
+            value = rawValue;
+        }
 
         return DirectiveLine(
           directive: Directive(name: name, value: value),
@@ -253,9 +264,7 @@ final class _SongDecoder extends Converter<String, Song> {
 }
 
 /// Encodes a [Song] to canonical ChordPro source text.
-final class _SongEncoder extends Converter<Song, String> {
-  const _SongEncoder();
-
+final class const _SongEncoder() extends Converter<Song, String> {
   /// Converts [input] to normalized source using LF line separators.
   ///
   /// Parser issues are not serialized because they describe the source rather

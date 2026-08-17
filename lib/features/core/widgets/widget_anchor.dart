@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _kDefaultAnimationStyle = AnimationStyle(
   duration: Duration(milliseconds: 200),
@@ -19,30 +19,16 @@ abstract interface class WidgetAnchorController {
   void close();
 }
 
-class WidgetAnchor extends StatefulWidget {
-  const WidgetAnchor({
-    super.key,
-    required this.targetAlignment,
-    required this.followerAlignment,
-    this.alignmentOffset = .zero,
-    this.child,
-    required this.widgetBuilder,
-    required this.builder,
-    this.animationStyle = _kDefaultAnimationStyle,
-  });
-
-  final Alignment targetAlignment;
-  final Alignment followerAlignment;
-
-  final Offset alignmentOffset;
-
-  final Widget? child;
-
-  final WidgetBuilder widgetBuilder;
-  final WidgetAnchorBuilder builder;
-
-  final AnimationStyle animationStyle;
-
+class const WidgetAnchor({
+  super.key,
+  required final Alignment targetAlignment,
+  required final Alignment followerAlignment,
+  final Offset alignmentOffset = .zero,
+  final Widget? child,
+  required final WidgetBuilder widgetBuilder,
+  required final WidgetAnchorBuilder builder,
+  final AnimationStyle animationStyle = _kDefaultAnimationStyle,
+}) extends StatefulWidget {
   @override
   State<WidgetAnchor> createState() => _WidgetAnchorState();
 }

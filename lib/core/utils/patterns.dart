@@ -2,9 +2,7 @@
 ///
 /// These patterns recognize structure only. Semantic conversion and error
 /// reporting remain the responsibility of the codecs and source editor.
-abstract final class Patterns {
-  const Patterns._();
-
+abstract final class const Patterns._() {
   static final lineEndings = RegExp(r'\r\n|\r|\n');
 
   /// A complete directive with a non-empty value when a colon is present.

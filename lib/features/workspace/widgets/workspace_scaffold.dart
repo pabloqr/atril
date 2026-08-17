@@ -13,10 +13,10 @@ import 'package:atril/features/workspace/view_model/editor_view_model.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:atril/features/workspace/widgets/editor_screen.dart';
 import 'package:flutter/gestures.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 const _kCompactBreakpoint = 600.0;
 
@@ -30,12 +30,11 @@ enum _WorkspacePage {
   };
 }
 
-class WorkspaceScaffold extends StatefulWidget {
-  const WorkspaceScaffold({super.key, required this.viewModel, required this.editorViewModel});
-
-  final WorkspaceViewModel viewModel;
-  final EditorViewModel editorViewModel;
-
+class const WorkspaceScaffold({
+  super.key,
+  required final WorkspaceViewModel viewModel,
+  required final EditorViewModel editorViewModel,
+}) extends StatefulWidget {
   @override
   State<WorkspaceScaffold> createState() => _WorkspaceScaffoldState();
 }
@@ -498,12 +497,12 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
   }
 }
 
-class _ToolbarSlideTransition extends AnimatedWidget {
-  const _ToolbarSlideTransition({required Animation<double> animation, required this.isCompact, required this.child})
-    : super(listenable: animation);
-
-  final bool isCompact;
-  final Widget child;
+class const _ToolbarSlideTransition({
+  required Animation<double> animation,
+  required final bool isCompact,
+  required final Widget child,
+}) extends AnimatedWidget {
+  this : super(listenable: animation);
 
   Animation<double> get _animation => listenable as Animation<double>;
 
@@ -527,9 +526,7 @@ class _ToolbarSlideTransition extends AnimatedWidget {
   }
 }
 
-class _DirectivePickerSheet extends StatefulWidget {
-  const _DirectivePickerSheet();
-
+class const _DirectivePickerSheet() extends StatefulWidget {
   @override
   State<_DirectivePickerSheet> createState() => _DirectivePickerSheetState();
 }
@@ -678,23 +675,13 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
   }
 }
 
-class _TransposeControls extends StatelessWidget {
-  const _TransposeControls({
-    required this.direction,
-    required this.onTransposeDownPressed,
-    required this.onTransposeUpPressed,
-    required this.onResetPressed,
-    required this.semitones,
-  });
-
-  final Axis direction;
-
-  final VoidCallback onTransposeDownPressed;
-  final VoidCallback onTransposeUpPressed;
-  final VoidCallback onResetPressed;
-
-  final int semitones;
-
+class const _TransposeControls({
+  required final Axis direction,
+  required final VoidCallback onTransposeDownPressed,
+  required final VoidCallback onTransposeUpPressed,
+  required final VoidCallback onResetPressed,
+  required final int semitones,
+}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;

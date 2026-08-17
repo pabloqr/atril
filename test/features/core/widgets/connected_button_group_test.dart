@@ -1,6 +1,6 @@
 import 'package:atril/features/core/widgets/connected_button_group.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   testWidgets('ConnectedButtonGroup emits single selection changes', (tester) async {

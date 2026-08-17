@@ -29,14 +29,19 @@ linter:
     - combinators_ordering
     - comment_references
     - directives_ordering
+    - empty_container_bodies
+    - initialize_in_field_declaration
     - invalid_case_patterns
-    - one_member_abstracts
     - only_throw_errors
     - omit_local_variable_types
     - prefer_final_fields
     - prefer_final_in_for_each
     - prefer_final_locals
     - prefer_single_quotes
+    - unnecessary_const_in_enum_constructor
+    - unnecessary_primary_constructor_body
+    - unnecessary_type_name_in_constructor
+    - use_declaring_parameters
 
 analyzer:
   language:
@@ -47,6 +52,13 @@ analyzer:
   exclude:
     - "**/*.freezed.dart"
     - "**/*.g.dart"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 formatter:
   page_width: 120

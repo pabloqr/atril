@@ -10,20 +10,17 @@ import 'package:atril/domain/models/chord/chord.dart';
 /// enforce bounds or define how offsets are measured for every possible source
 /// encoding. Parsers and renderers should agree on the same indexing convention
 /// before exchanging anchors.
-final class ChordAnchor {
-  /// Creates an anchor for [chord] at [offset].
-  ChordAnchor({required this.chord, required this.offset});
-
+final class ChordAnchor({
   /// The chord that should be associated with the lyric position.
-  final Chord chord;
+  required final Chord chord,
 
   /// The position of [chord] within the owning lyric line.
   ///
   /// No validation is performed here. A negative offset, or an offset beyond the
   /// lyric text length, is possible unless rejected by the code that constructs
   /// the anchor.
-  final int offset;
-
+  required final int offset,
+}) {
   @override
   String toString() => 'ChordAnchor(chord: $chord, offset: $offset)';
 }

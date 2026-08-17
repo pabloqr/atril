@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 
 import 'package:atril/core/routing/route_observer.dart';
-import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
 enum FabSize { small, regular, medium, large }
 
@@ -22,33 +22,23 @@ extension on FabSize {
   };
 }
 
-class FabMenuItem {
-  const FabMenuItem({required this.icon, required this.label, required this.onPressed});
+class const FabMenuItem({
+  required final IconData icon,
+  required final String label,
+  required final VoidCallback onPressed,
+});
 
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-}
-
-class _FabMenuItemButton extends AnimatedWidget {
-  const _FabMenuItemButton({
-    required Animation<double> animation,
-    required this.interval,
-    required this.item,
-    required this.expandFromRight,
-    required this.backgroundColor,
-    required this.foregroundColor,
-    required this.textStyle,
-    required this.onPressed,
-  }) : super(listenable: animation);
-
-  final Interval interval;
-  final FabMenuItem item;
-  final bool expandFromRight;
-  final Color backgroundColor;
-  final Color foregroundColor;
-  final TextStyle? textStyle;
-  final VoidCallback onPressed;
+class const _FabMenuItemButton({
+  required Animation<double> animation,
+  required final Interval interval,
+  required final FabMenuItem item,
+  required final bool expandFromRight,
+  required final Color backgroundColor,
+  required final Color foregroundColor,
+  required final TextStyle? textStyle,
+  required final VoidCallback onPressed,
+}) extends AnimatedWidget {
+  this : super(listenable: animation);
 
   Animation<double> get _animation => listenable as Animation<double>;
 
@@ -105,19 +95,12 @@ class _FabMenuItemButton extends AnimatedWidget {
   }
 }
 
-class _FabMenuItemBackgroundPainter extends CustomPainter {
-  const _FabMenuItemBackgroundPainter({
-    required this.extent,
-    required this.opacity,
-    required this.expandFromRight,
-    required this.color,
-  });
-
-  final double extent;
-  final double opacity;
-  final bool expandFromRight;
-  final Color color;
-
+class const _FabMenuItemBackgroundPainter({
+  required final double extent,
+  required final double opacity,
+  required final bool expandFromRight,
+  required final Color color,
+}) extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (extent <= 0.0 || size.isEmpty) return;
@@ -145,7 +128,7 @@ class _FabMenuItemBackgroundPainter extends CustomPainter {
 enum FabMenuAnchor { bottomRight, bottomLeft }
 
 class FabMenu extends StatefulWidget {
-  FabMenu({
+  new({
     super.key,
     this.size = FabSize.regular,
     this.anchor = FabMenuAnchor.bottomRight,

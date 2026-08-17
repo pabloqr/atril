@@ -4,15 +4,13 @@ import 'package:atril/data/repositories/song/song_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:logging/logging.dart';
 
-final class LoadingViewModel extends ChangeNotifier {
+final class LoadingViewModel({required final SongRepository _songRepository, required final String filename})
+    extends ChangeNotifier {
   final _log = Logger('LoadingViewModel');
 
-  LoadingViewModel({required this._songRepository, required this.filename}) {
+  this {
     load = Command0(_load)..execute();
   }
-
-  final SongRepository _songRepository;
-  final String filename;
 
   late final Command0<void> load;
 

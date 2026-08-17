@@ -1,17 +1,15 @@
 import 'package:atril/data/services/song/source_editor.dart';
 import 'package:atril/domain/models/song/parse_issue.dart';
 import 'package:atril/features/workspace/view_model/editor_view_model.dart';
-import 'package:flutter/material.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
-class EditorScreen extends StatefulWidget {
-  const EditorScreen({super.key, required this.viewModel, required this.focusNode, required this.historyController});
-
-  final EditorViewModel viewModel;
-
-  final FocusNode focusNode;
-  final UndoHistoryController historyController;
-
+class const EditorScreen({
+  super.key,
+  required final EditorViewModel viewModel,
+  required final FocusNode focusNode,
+  required final UndoHistoryController historyController,
+}) extends StatefulWidget {
   @override
   State<EditorScreen> createState() => _EditorScreenState();
 }
@@ -230,22 +228,16 @@ class _EditorScreenState extends State<EditorScreen> with AutomaticKeepAliveClie
                       spacing: 8.0,
                       children: [
                         Icon(
-                          issue.severity == .warning
-                              ? Symbols.warning_amber_rounded
-                              : Symbols.error_outline_rounded,
+                          issue.severity == .warning ? Symbols.warning_amber_rounded : Symbols.error_outline_rounded,
                           size: 18.0,
-                          color: issue.severity == .warning
-                              ? colorScheme.tertiary
-                              : colorScheme.error,
+                          color: issue.severity == .warning ? colorScheme.tertiary : colorScheme.error,
                         ),
                         Flexible(
                           child: Text(
                             '$issueNumber of ${widget.viewModel.issuesCount}'
                             ' · ${issue.code.message}: ${issue.message}',
                             style: textTheme.labelMedium?.copyWith(
-                              color: issue.severity == .warning
-                                  ? colorScheme.tertiary
-                                  : colorScheme.error,
+                              color: issue.severity == .warning ? colorScheme.tertiary : colorScheme.error,
                             ),
                           ),
                         ),

@@ -5,16 +5,12 @@ import 'package:atril/features/core/utils/widget_utilities.dart';
 import 'package:atril/features/core/widgets/connected_button_group.dart';
 import 'package:atril/features/dashboard/view_model/song_list_view_model.dart';
 import 'package:atril/features/song/widgets/song_list_tile.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:material_symbols_icons/symbols.dart';
+import 'package:material_ui/material_ui.dart';
 
-class SongListScreen extends StatefulWidget {
-  const SongListScreen({super.key, required this.viewModel});
-
-  final SongListViewModel viewModel;
-
+class const SongListScreen({super.key, required final SongListViewModel viewModel}) extends StatefulWidget {
   @override
   State<SongListScreen> createState() => _SongListScreenState();
 }
@@ -131,12 +127,8 @@ class _SongListScreenState extends State<SongListScreen> with SingleTickerProvid
   }
 }
 
-class _LibraryIconButton extends StatefulWidget {
-  const _LibraryIconButton({required this.visible, required this.onPressed});
-
-  final bool visible;
-  final VoidCallback onPressed;
-
+class const _LibraryIconButton({required final bool visible, required final VoidCallback onPressed})
+    extends StatefulWidget {
   @override
   State<_LibraryIconButton> createState() => _LibraryIconButtonState();
 }
@@ -221,11 +213,7 @@ class _LibraryIconButtonState extends State<_LibraryIconButton> with TickerProvi
   }
 }
 
-class _LibraryBanner extends StatelessWidget {
-  const _LibraryBanner({required this.songCount});
-
-  final int songCount;
-
+class const _LibraryBanner({required final int songCount}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -272,11 +260,7 @@ class _LibraryBanner extends StatelessWidget {
   }
 }
 
-class _LibraryControls extends StatefulWidget {
-  const _LibraryControls({required this.viewModel});
-
-  final SongListViewModel viewModel;
-
+class const _LibraryControls({required final SongListViewModel viewModel}) extends StatefulWidget {
   @override
   State<_LibraryControls> createState() => _LibraryControlsState();
 }
@@ -338,21 +322,13 @@ enum _PreviewSettingsStyle { filledTonal, transparent }
 
 enum _PreviewLibraryTone { primary, primaryContainer }
 
-class _MainAppBarPreviewVariant {
-  const _MainAppBarPreviewVariant({
-    required this.name,
-    required this.primaryWidth,
-    required this.secondaryWidth,
-    required this.settingsStyle,
-    required this.libraryTone,
-  });
-
-  final String name;
-  final ButtonWidth primaryWidth;
-  final ButtonWidth secondaryWidth;
-  final _PreviewSettingsStyle settingsStyle;
-  final _PreviewLibraryTone libraryTone;
-}
+class const _MainAppBarPreviewVariant({
+  required final String name,
+  required final ButtonWidth primaryWidth,
+  required final ButtonWidth secondaryWidth,
+  required final _PreviewSettingsStyle settingsStyle,
+  required final _PreviewLibraryTone libraryTone,
+});
 
 const _mainAppBarPreviewVariants = [
   _MainAppBarPreviewVariant(
@@ -448,11 +424,7 @@ Widget mainAppBarVariantsPreview() {
   );
 }
 
-class _MainAppBarPreviewFrame extends StatelessWidget {
-  const _MainAppBarPreviewFrame({required this.variant});
-
-  final _MainAppBarPreviewVariant variant;
-
+class const _MainAppBarPreviewFrame({required final _MainAppBarPreviewVariant variant}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -474,11 +446,7 @@ class _MainAppBarPreviewFrame extends StatelessWidget {
   }
 }
 
-class _PreviewMainAppBar extends StatelessWidget {
-  const _PreviewMainAppBar({required this.variant});
-
-  final _MainAppBarPreviewVariant variant;
-
+class const _PreviewMainAppBar({required final _MainAppBarPreviewVariant variant}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final libraryStyle = (WidgetStyleUtilities.iconButtonStyle(variant.primaryWidth) ?? const ButtonStyle()).merge(
@@ -526,12 +494,8 @@ class _PreviewMainAppBar extends StatelessWidget {
   }
 }
 
-class _SettingsPreviewButton extends StatelessWidget {
-  const _SettingsPreviewButton({required this.style, required this.variant});
-
-  final ButtonStyle? style;
-  final _PreviewSettingsStyle variant;
-
+class const _SettingsPreviewButton({required final ButtonStyle? style, required final _PreviewSettingsStyle variant})
+    extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (variant) {

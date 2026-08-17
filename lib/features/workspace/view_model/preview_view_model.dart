@@ -1,21 +1,24 @@
-import 'package:atril/core/utils/exceptions.dart';
 import 'package:atril/domain/models/song/song.dart';
 import 'package:atril/features/workspace/view_model/workspace_view_model.dart';
 import 'package:flutter/foundation.dart';
 
-class PreviewViewModel extends ChangeNotifier {
-  PreviewViewModel({required this._workspace}) {
-    _workspace.addListener(notifyListeners);
+class PreviewViewModel({required final WorkspaceViewModel _workspaceViewModel}) extends ChangeNotifier {
+  this {
+    _workspaceViewModel.addListener(_handleWorkspaceChanged);
   }
 
-  final WorkspaceViewModel _workspace;
+  Song get song => _workspaceViewModel.song;
 
-  Song get song => _workspace.song.issues.isEmpty ? _workspace.song : throw AtrilException('Song has pending issues.');
+  bool get hasIssues => song.issues.isNotEmpty;
 
   @override
   void dispose() {
-    _workspace.removeListener(notifyListeners);
-    
+    _workspaceViewModel.removeListener(_handleWorkspaceChanged);
+
     super.dispose();
+  }
+
+  void _handleWorkspaceChanged() {
+    notifyListeners();
   }
 }

@@ -1,10 +1,7 @@
 // ignore_for_file: unused_element
 
-final class AppRoute {
-  AppRoute({required this.name, required this.path}) : assert(name.isNotEmpty), assert(path.isNotEmpty);
-
-  final String name;
-  final String path;
+final class AppRoute({required final String name, required final String path}) {
+  this : assert(name.isNotEmpty), assert(path.isNotEmpty);
 }
 
 // -------------------------------------------------------------------------------------------------------------------//
