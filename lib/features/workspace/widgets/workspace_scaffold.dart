@@ -756,14 +756,18 @@ class const _TransposeControls({
       ],
     );
 
-    return Material(
-      elevation: 3.0,
-      color: colorScheme.surfaceContainer,
-      borderRadius: .circular(16.0),
-      clipBehavior: .antiAlias,
-      child: Padding(
-        padding: const .all(4.0),
-        child: direction == .horizontal ? IntrinsicHeight(child: content) : IntrinsicWidth(child: content),
+    return AnimatedSize(
+      duration: _kAnimationDuration,
+      curve: _kAnimationCurve,
+      child: Material(
+        elevation: 3.0,
+        color: colorScheme.surfaceContainer,
+        borderRadius: .circular(16.0),
+        clipBehavior: .antiAlias,
+        child: Padding(
+          padding: const .all(4.0),
+          child: direction == .horizontal ? IntrinsicHeight(child: content) : IntrinsicWidth(child: content),
+        ),
       ),
     );
   }
