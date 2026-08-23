@@ -25,6 +25,7 @@ class const ToolbarIconButton({
   final int? badgeCount,
   final bool isSelected = false,
   required final String label,
+  final List<ToolbarIconButton> children = const [],
 }) extends ToolbarItem;
 
 class const ToolbarCollapsibleItem({
@@ -36,6 +37,7 @@ class const ToolbarCollapsibleItem({
   super.badgeCount,
   super.isSelected = false,
   required super.label,
+  super.children,
 }) extends ToolbarIconButton;
 
 class const Toolbar({
@@ -340,12 +342,28 @@ class const _OverflowMenuButton({
 
           return Directionality(
             textDirection: textDirection,
-            child: MenuItemButton(
-              onPressed: item.onPressed,
-              leadingIcon: Icon(item.icon),
-              trailingIcon: item.badgeCount != null ? Badge.count(count: item.badgeCount!) : null,
-              child: Text(item.label),
-            ),
+            child: item.children.isEmpty
+                ? MenuItemButton(
+                    onPressed: item.onPressed,
+                    leadingIcon: Icon(item.icon),
+                    trailingIcon: item.badgeCount != null ? Badge.count(count: item.badgeCount!) : null,
+                    child: Text(item.label),
+                  )
+                : SubmenuButton(
+                    alignmentOffset: Offset(8.0, 0.0),
+                    animated: true,
+                    leadingIcon: Icon(item.icon),
+                    menuChildren: List.generate(item.children.length, (index) {
+                      final child = item.children[index];
+
+                      return MenuItemButton(
+                        onPressed: child.onPressed,
+                        leadingIcon: Icon(child.icon),
+                        child: Text(child.label),
+                      );
+                    }),
+                    child: Text(item.label),
+                  ),
           );
         }),
         builder: (context, controller, child) {
