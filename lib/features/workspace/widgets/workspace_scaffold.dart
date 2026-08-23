@@ -238,7 +238,54 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                                   isScrollControlled: true,
                                                   useSafeArea: true,
                                                   context: context,
-                                                  builder: (context) => const _DirectivePickerSheet(),
+                                                  builder: (context) => _CustomBottomSheet(
+                                                    title: 'Add directive',
+                                                    builder: (context, scrollController) => ListView.builder(
+                                                      controller: scrollController,
+                                                      itemCount: DirectiveType.values.length - 1,
+                                                      itemBuilder: (context, index) {
+                                                        final colorScheme = Theme.of(context).colorScheme;
+                                                        final textTheme = Theme.of(context).textTheme;
+
+                                                        final directive = DirectiveType.values[index];
+                                                        return Card.filled(
+                                                          margin: .fromLTRB(
+                                                            16.0,
+                                                            index == 0 ? 0.0 : 1.0,
+                                                            16.0,
+                                                            index == DirectiveType.values.length - 2 ? 16.0 : 1.0,
+                                                          ),
+                                                          color: colorScheme.surfaceContainer,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: WidgetUtilities.calculateBorderRadius(
+                                                              WidgetUtilities.calculateListWidgetSide(
+                                                                index,
+                                                                DirectiveType.values.length - 1,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: InkWell(
+                                                            onTap: () => context.pop(directive),
+                                                            child: Padding(
+                                                              padding: const .all(16.0),
+                                                              child: Row(
+                                                                spacing: 12.0,
+                                                                children: [
+                                                                  Icon(directive.icon),
+                                                                  Text(
+                                                                    directive.name.toCapitalised(),
+                                                                    style: textTheme.bodyLarge?.copyWith(
+                                                                      fontWeight: FontWeight.w500,
+                                                                    ),
+                                                                  ),
+                                                                ],
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
                                                 );
 
                                                 if (selectedDirective == null) return;
@@ -526,12 +573,15 @@ class const _ToolbarSlideTransition({
   }
 }
 
-class const _DirectivePickerSheet() extends StatefulWidget {
+class const _CustomBottomSheet({
+  required final String title,
+  required final Widget Function(BuildContext context, ScrollController scrollController) builder,
+}) extends StatefulWidget {
   @override
-  State<_DirectivePickerSheet> createState() => _DirectivePickerSheetState();
+  State<_CustomBottomSheet> createState() => _CustomBottomSheetState();
 }
 
-class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
+class _CustomBottomSheetState extends State<_CustomBottomSheet> {
   static const _initialSize = 0.4;
   static const _minSize = 0.25;
   static const _maxSize = 1.0;
@@ -615,7 +665,7 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
                   ),
                   Padding(
                     padding: const .fromLTRB(16.0, 0.0, 16.0, 16.0),
-                    child: Text('Add directive', style: textTheme.titleMedium),
+                    child: Text(widget.title, style: textTheme.titleMedium),
                   ),
                   Expanded(
                     child: ScrollConfiguration(
@@ -625,43 +675,7 @@ class _DirectivePickerSheetState extends State<_DirectivePickerSheet> {
                       ),
                       child: NotificationListener<ScrollEndNotification>(
                         onNotification: _handleListScrollEnd,
-                        child: ListView.builder(
-                          controller: scrollController,
-                          itemCount: DirectiveType.values.length - 1,
-                          itemBuilder: (context, index) {
-                            final directive = DirectiveType.values[index];
-                            return Card.filled(
-                              margin: .fromLTRB(
-                                16.0,
-                                index == 0 ? 0.0 : 1.0,
-                                16.0,
-                                index == DirectiveType.values.length - 2 ? 16.0 : 1.0,
-                              ),
-                              color: colorScheme.surfaceContainer,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: WidgetUtilities.calculateBorderRadius(
-                                  WidgetUtilities.calculateListWidgetSide(index, DirectiveType.values.length - 1),
-                                ),
-                              ),
-                              child: InkWell(
-                                onTap: () => context.pop(directive),
-                                child: Padding(
-                                  padding: const .all(16.0),
-                                  child: Row(
-                                    spacing: 12.0,
-                                    children: [
-                                      Icon(directive.icon),
-                                      Text(
-                                        directive.name.toCapitalised(),
-                                        style: textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w500),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
+                        child: widget.builder(context, scrollController),
                       ),
                     ),
                   ),
