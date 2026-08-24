@@ -1,3 +1,4 @@
+import 'package:atril/core/extensions/string.dart';
 import 'package:atril/domain/models/chord/interval_qualifier.dart';
 import 'package:atril/domain/models/chord/interval_quantity.dart';
 
@@ -111,5 +112,5 @@ enum Interval(
   int get diatonicSteps => quantity.diatonicSteps;
 
   @override
-  String toString() => '${quantity.name}${qualifier.name}';
+  String toString() => '${qualifier.name.toCapitalised()} ${quantity.name}';
 }
