@@ -4,12 +4,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
 void main() {
-  group('WidgetUtilities.calculateListWidgetSide', () {
+  group('WidgetUtilities.calculateWidgetSide', () {
     test('classifies first, middle, last, and single item positions', () {
-      expect(WidgetUtilities.calculateListWidgetSide(0, 1), WidgetSide.all);
-      expect(WidgetUtilities.calculateListWidgetSide(0, 3), WidgetSide.top);
-      expect(WidgetUtilities.calculateListWidgetSide(1, 3), WidgetSide.none);
-      expect(WidgetUtilities.calculateListWidgetSide(2, 3), WidgetSide.bottom);
+      expect(WidgetUtilities.calculateWidgetSide(0, 1), WidgetSide.all);
+      expect(WidgetUtilities.calculateWidgetSide(0, 3), WidgetSide.top);
+      expect(WidgetUtilities.calculateWidgetSide(1, 3), WidgetSide.none);
+      expect(WidgetUtilities.calculateWidgetSide(2, 3), WidgetSide.bottom);
     });
   });
 

@@ -97,7 +97,7 @@ class _SongListScreenState extends State<SongListScreen> with SingleTickerProvid
 
                   return SongListTile(
                     borderRadius: WidgetUtilities.calculateBorderRadius(
-                      WidgetUtilities.calculateListWidgetSide(index, filteredSongs.length),
+                      WidgetUtilities.calculateWidgetSide(index, filteredSongs.length),
                     ),
                     filename: songFile.filename,
                     song: filteredSongs[index],

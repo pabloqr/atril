@@ -17,10 +17,38 @@ abstract final class WidgetStyleUtilities {
 }
 
 abstract final class WidgetUtilities {
-  static WidgetSide calculateListWidgetSide(int index, int lenght) {
-    if (lenght <= 1) return WidgetSide.all;
-    if (index == 0) return WidgetSide.top;
-    if (index == lenght - 1) return WidgetSide.bottom;
+  static WidgetSide calculateWidgetSide(int index, int length, [int crossAxisCount = 1]) {
+    if (length == 0 || crossAxisCount == 0) return WidgetSide.none;
+    if (length == 1) return crossAxisCount == 1 ? WidgetSide.all : WidgetSide.left;
+
+    final col = index % crossAxisCount;
+    final row = index ~/ crossAxisCount;
+    final lastRow = (length - 1) ~/ crossAxisCount;
+
+    if (crossAxisCount == 1) {
+      if (index == 0) return WidgetSide.top;
+      if (index == length - 1) return WidgetSide.bottom;
+      return WidgetSide.none;
+    }
+
+    if (length <= crossAxisCount) {
+      if (index == 0) return WidgetSide.left;
+      if (index == crossAxisCount - 1) return WidgetSide.right;
+      return WidgetSide.none;
+    }
+
+    final isFirstRow = row == 0;
+    final isLastRow = row == lastRow;
+    final isFirstCol = col == 0;
+    final isLastCol = col == crossAxisCount - 1;
+
+    if ((!isFirstRow && !isLastRow) || (!isFirstCol && !isLastCol)) return WidgetSide.none;
+
+    if (isFirstRow && isFirstCol) return WidgetSide.topLeft;
+    if (isFirstRow && isLastCol) return WidgetSide.topRight;
+    if (isLastRow && isFirstCol) return WidgetSide.bottomLeft;
+    if (isLastRow && isLastCol) return WidgetSide.bottomRight;
+
     return WidgetSide.none;
   }
 

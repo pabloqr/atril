@@ -258,7 +258,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                                           color: colorScheme.surfaceContainer,
                                                           shape: RoundedRectangleBorder(
                                                             borderRadius: WidgetUtilities.calculateBorderRadius(
-                                                              WidgetUtilities.calculateListWidgetSide(
+                                                              WidgetUtilities.calculateWidgetSide(
                                                                 index,
                                                                 DirectiveType.values.length - 1,
                                                               ),
