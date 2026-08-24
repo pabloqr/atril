@@ -385,9 +385,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                       ToolbarCollapsibleItem(
                                         key: ValueKey(controller.isOpen),
                                         animate: true,
-                                        onPressed: controller.toggle,
                                         icon: Symbols.swap_vert_rounded,
-                                        isSelected: controller.isOpen,
                                         label: 'Transpose',
                                         children: [
                                           ToolbarIconButton(

@@ -8,18 +8,30 @@ const _kItemSpacing = 4.0;
 const _kAnimationDuration = Duration(milliseconds: 300);
 const _kAnimationCurve = Curves.easeInOutCubicEmphasized;
 
+typedef ToolbarMenuAnchorBuilder = Widget Function(
+  BuildContext context,
+  Axis direction,
+  Offset menuAnchorOffset,
+  ToolbarIconButton item,
+);
+
 typedef ToolbarSeparatorBuilder = Widget Function(BuildContext context, Axis direction, ToolbarSeparator item);
 
-typedef ToolbarIconButtonBuilder = Widget Function(BuildContext context, ToolbarIconButton item);
+typedef ToolbarIconButtonBuilder = Widget Function(
+  BuildContext context,
+  Axis direction,
+  Offset? menuAnchorOffset,
+  ToolbarIconButton item,
+);
 
 sealed class const ToolbarItem({final Key? key});
 
-class ToolbarSeparator extends ToolbarItem;
+final class ToolbarSeparator extends ToolbarItem;
 
-class const ToolbarIconButton({
+final class const ToolbarIconButton({
   super.key,
   final bool animate = false,
-  required final VoidCallback? onPressed,
+  final VoidCallback? onPressed,
   required final IconData icon,
   final IconData? selectedIcon,
   final int? badgeCount,
@@ -28,10 +40,10 @@ class const ToolbarIconButton({
   final List<ToolbarIconButton> children = const [],
 }) extends ToolbarItem;
 
-class const ToolbarCollapsibleItem({
+final class const ToolbarCollapsibleItem({
   super.key,
   super.animate = false,
-  required super.onPressed,
+  super.onPressed,
   required super.icon,
   super.selectedIcon,
   super.badgeCount,
@@ -40,17 +52,82 @@ class const ToolbarCollapsibleItem({
   super.children,
 }) extends ToolbarIconButton;
 
-class const Toolbar({
+final class const Toolbar({
   super.key,
   final Axis direction = .horizontal,
   final Offset? menuAnchorOffset,
   final bool showFab = false,
   final Widget? floatingActionButton,
+  final ToolbarMenuAnchorBuilder menuAnchorBuilder = _buildMenuAnchor,
   final ToolbarSeparatorBuilder separatorBuilder = _buildSeparator,
   final ToolbarIconButtonBuilder iconButtonBuilder = _buildIconButton,
   required final List<ToolbarItem> children,
 }) extends StatelessWidget {
   this : assert(!showFab || floatingActionButton != null);
+
+  static Widget _buildMenuAnchor(
+    BuildContext context,
+    Axis direction,
+    Offset menuAnchorOffset,
+    ToolbarIconButton item,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textDirection = Directionality.of(context);
+
+    Widget buildChild(ToolbarIconButton child) {
+      return child.children.isEmpty
+          ? MenuItemButton(
+              onPressed: child.onPressed,
+              leadingIcon: Icon(child.icon),
+              trailingIcon: child.badgeCount != null ? Badge.count(count: child.badgeCount!) : null,
+              child: Text(child.label),
+            )
+          : SubmenuButton(
+              alignmentOffset: Offset(8.0, 0.0),
+              animated: true,
+              leadingIcon: Icon(child.icon),
+              menuChildren: List.generate(child.children.length, (index) => buildChild(child.children[index])),
+              child: Text(child.label),
+            );
+    }
+
+    var hasBadge = false;
+
+    return Directionality(
+      textDirection: TextDirection.values[(textDirection.index + 1) % TextDirection.values.length],
+      child: MenuAnchor(
+        alignmentOffset: menuAnchorOffset,
+        animated: true,
+        menuChildren: List.generate(item.children.length, (index) {
+          final child = item.children[index];
+
+          hasBadge = hasBadge || item.badgeCount != null;
+
+          return Directionality(textDirection: textDirection, child: buildChild(child));
+        }),
+        builder: (context, controller, child) {
+          final icon = Icon(item.icon);
+
+          return AnimatedSwitcher(
+            duration: const Duration(milliseconds: 200),
+            child: Directionality(
+              textDirection: textDirection,
+              child: IconButton(
+                key: ValueKey(controller.isOpen),
+                style: IconButton.styleFrom(
+                  backgroundColor: controller.isOpen ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
+                  foregroundColor: controller.isOpen ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
+                ),
+                onPressed: () => controller.isOpen ? controller.close() : controller.open(),
+                tooltip: item.label,
+                icon: hasBadge ? Badge(child: icon) : icon,
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
 
   static Widget _buildSeparator(BuildContext context, Axis direction, ToolbarSeparator item) {
     return SizedBox(
@@ -62,10 +139,26 @@ class const Toolbar({
     );
   }
 
-  static Widget _buildIconButton(BuildContext context, ToolbarIconButton item) {
+  static Widget _buildIconButton(
+    BuildContext context,
+    Axis direction,
+    Offset? menuAnchorOffset,
+    ToolbarIconButton item,
+  ) {
     final colorScheme = Theme.of(context).colorScheme;
 
     final icon = Icon(item.icon);
+
+    if (item.children.isNotEmpty) {
+      final textDirection = Directionality.of(context);
+
+      final sign = textDirection == TextDirection.ltr ? 1.0 : -1.0;
+
+      final dx = (direction == Axis.horizontal ? 0.0 : 56.0) * sign;
+      final dy = direction == Axis.horizontal ? 16.0 : -48.0;
+
+      return _buildMenuAnchor(context, direction, menuAnchorOffset ?? Offset(dx, dy), item);
+    }
 
     final button = IconButton(
       key: item.key,
@@ -107,6 +200,7 @@ class const Toolbar({
               shouldCollapse: shouldCollapse,
               direction: direction,
               menuAnchorOffset: menuAnchorOffset,
+              menuAnchorBuilder: menuAnchorBuilder,
               separatorBuilder: separatorBuilder,
               iconButtonBuilder: iconButtonBuilder,
               children: children,
@@ -137,6 +231,7 @@ class const _BottomToolbar({
   required final bool shouldCollapse,
   required final Axis direction,
   final Offset? menuAnchorOffset,
+  required final ToolbarMenuAnchorBuilder menuAnchorBuilder,
   required final ToolbarSeparatorBuilder separatorBuilder,
   required final ToolbarIconButtonBuilder iconButtonBuilder,
   required final List<ToolbarItem> children,
@@ -192,7 +287,7 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
           fixedWidgets.add(widget.separatorBuilder(context, widget.direction, item));
 
         case ToolbarIconButton():
-          fixedWidgets.add(widget.iconButtonBuilder(context, item));
+          fixedWidgets.add(widget.iconButtonBuilder(context, widget.direction, widget.menuAnchorOffset, item));
       }
     }
 
@@ -200,6 +295,7 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
         ? _OverflowMenuButton(
             direction: widget.direction,
             menuAnchorOffset: widget.menuAnchorOffset,
+            menuAnchorBuilder: widget.menuAnchorBuilder,
             items: collapsibleItems,
           )
         : null;
@@ -227,7 +323,10 @@ class _BottomToolbarState extends State<_BottomToolbar> with SingleTickerProvide
                   direction: widget.direction,
                   mainAxisSize: .min,
                   spacing: _kItemSpacing,
-                  children: [for (final item in collapsibleItems) widget.iconButtonBuilder(context, item)],
+                  children: [
+                    for (final item in collapsibleItems)
+                      widget.iconButtonBuilder(context, widget.direction, widget.menuAnchorOffset, item),
+                  ],
                 ),
                 builder: (context, actionsGroup) =>
                     _buildCollapsibleGroup(actionsGroup: actionsGroup!, overflowButton: overflowButton!),
@@ -316,11 +415,11 @@ class const _CollapsingChild({
 class const _OverflowMenuButton({
   required final Axis direction,
   final Offset? menuAnchorOffset,
+  required final ToolbarMenuAnchorBuilder menuAnchorBuilder,
   required final List<ToolbarCollapsibleItem> items,
 }) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textDirection = Directionality.of(context);
 
     final sign = textDirection == TextDirection.ltr ? 1.0 : -1.0;
@@ -328,66 +427,11 @@ class const _OverflowMenuButton({
     final dx = (direction == Axis.horizontal ? 0.0 : 56.0) * sign;
     final dy = direction == Axis.horizontal ? 16.0 : -88.0;
 
-    var hasBadge = false;
-
-    return Directionality(
-      textDirection: TextDirection.values[(textDirection.index + 1) % TextDirection.values.length],
-      child: MenuAnchor(
-        alignmentOffset: menuAnchorOffset ?? Offset(dx, dy),
-        animated: true,
-        menuChildren: List.generate(items.length, (index) {
-          final item = items[index];
-
-          hasBadge = hasBadge || item.badgeCount != null;
-
-          return Directionality(
-            textDirection: textDirection,
-            child: item.children.isEmpty
-                ? MenuItemButton(
-                    onPressed: item.onPressed,
-                    leadingIcon: Icon(item.icon),
-                    trailingIcon: item.badgeCount != null ? Badge.count(count: item.badgeCount!) : null,
-                    child: Text(item.label),
-                  )
-                : SubmenuButton(
-                    alignmentOffset: Offset(8.0, 0.0),
-                    animated: true,
-                    leadingIcon: Icon(item.icon),
-                    menuChildren: List.generate(item.children.length, (index) {
-                      final child = item.children[index];
-
-                      return MenuItemButton(
-                        onPressed: child.onPressed,
-                        leadingIcon: Icon(child.icon),
-                        child: Text(child.label),
-                      );
-                    }),
-                    child: Text(item.label),
-                  ),
-          );
-        }),
-        builder: (context, controller, child) {
-          final icon = const Icon(Symbols.more_vert_rounded);
-
-          return AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            child: Directionality(
-              textDirection: textDirection,
-              child: IconButton(
-                key: ValueKey(controller.isOpen),
-                style: IconButton.styleFrom(
-                  backgroundColor: controller.isOpen ? colorScheme.secondaryContainer : colorScheme.surfaceContainer,
-                  foregroundColor: controller.isOpen ? colorScheme.onSecondaryContainer : colorScheme.onSurfaceVariant,
-                  // fixedSize: Size.square(48.0),
-                ),
-                onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-                tooltip: 'More actions',
-                icon: hasBadge ? Badge(child: icon) : icon,
-              ),
-            ),
-          );
-        },
-      ),
+    return menuAnchorBuilder(
+      context,
+      direction,
+      menuAnchorOffset ?? Offset(dx, dy),
+      ToolbarIconButton(animate: true, icon: Symbols.more_vert_rounded, label: 'More actions', children: items),
     );
   }
 }
