@@ -54,4 +54,6 @@ enum KeySignature(final Note tonic, final KeyMode mode, final Accidental acciden
 
   @override
   String toString() => '${tonic.symbol}${mode.symbol}';
+
+  String toLongString() => '${tonic.symbol} ${mode.name}';
 }
