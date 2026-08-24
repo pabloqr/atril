@@ -2,9 +2,12 @@ import 'package:atril/core/extensions/string.dart';
 import 'package:atril/core/routing/routes.dart';
 import 'package:atril/data/services/chord/chromatic_transposition.dart';
 import 'package:atril/data/services/song/source_editor.dart';
+import 'package:atril/domain/models/chord.dart';
+import 'package:atril/domain/models/chord/key_signature.dart';
 import 'package:atril/domain/models/song.dart';
 import 'package:atril/features/core/extensions/directive_type.dart';
 import 'package:atril/features/core/utils/widget_utilities.dart';
+import 'package:atril/features/core/widgets/connected_button_group.dart';
 import 'package:atril/features/core/widgets/dialog.dart';
 import 'package:atril/features/core/widgets/fab_menu.dart';
 import 'package:atril/features/core/widgets/toolbar.dart';
@@ -16,9 +19,12 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:material_symbols_icons/symbols.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:material_ui/material_ui.dart' hide Interval;
 
 const _kCompactBreakpoint = 600.0;
+
+const _kAnimationDuration = Duration(milliseconds: 300);
+const _kAnimationCurve = Curves.easeInOutCubicEmphasized;
 
 enum _WorkspacePage {
   editor,
@@ -240,21 +246,18 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                                   context: context,
                                                   builder: (context) => _CustomBottomSheet(
                                                     title: 'Add directive',
-                                                    builder: (context, scrollController) => ListView.builder(
+                                                    builder: (context, scrollController) => ListView.separated(
                                                       controller: scrollController,
+                                                      padding: const .fromLTRB(16.0, 0.0, 16.0, 16.0),
                                                       itemCount: DirectiveType.values.length - 1,
+                                                      separatorBuilder: (context, index) => SizedBox(height: 2.0),
                                                       itemBuilder: (context, index) {
                                                         final colorScheme = Theme.of(context).colorScheme;
                                                         final textTheme = Theme.of(context).textTheme;
 
                                                         final directive = DirectiveType.values[index];
                                                         return Card.filled(
-                                                          margin: .fromLTRB(
-                                                            16.0,
-                                                            index == 0 ? 0.0 : 1.0,
-                                                            16.0,
-                                                            index == DirectiveType.values.length - 2 ? 16.0 : 1.0,
-                                                          ),
+                                                          margin: .zero,
                                                           color: colorScheme.surfaceContainer,
                                                           shape: RoundedRectangleBorder(
                                                             borderRadius: WidgetUtilities.calculateBorderRadius(
@@ -304,6 +307,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                           animated: true,
                                           menuChildren: [
                                             SubmenuButton(
+                                              alignmentOffset: Offset(8.0, 0.0),
                                               animated: true,
                                               leadingIcon: const Icon(Symbols.data_object_rounded),
                                               menuChildren: List.generate(DirectiveType.values.length - 1, (index) {
@@ -335,7 +339,6 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                             child: const Icon(Symbols.music_note_add_rounded),
                                           ),
                                         ),
-
                                   widgetBuilder: (context) => _TransposeControls(
                                     direction: isCompact ? .horizontal : .vertical,
                                     semitones: _transposeSemitones,
@@ -383,16 +386,205 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
                                         key: ValueKey(controller.isOpen),
                                         animate: true,
                                         onPressed: controller.toggle,
-                                        icon: Icons.swap_vert_rounded,
+                                        icon: Symbols.swap_vert_rounded,
                                         isSelected: controller.isOpen,
                                         label: 'Transpose',
+                                        children: [
+                                          ToolbarIconButton(
+                                            onPressed: controller.toggle,
+                                            icon: Symbols.unfold_more_rounded,
+                                            label: 'By semitones',
+                                          ),
+                                          ToolbarIconButton(
+                                            onPressed: () async {
+                                              Widget content(
+                                                BuildContext context,
+                                                ScrollController? scrollController,
+                                              ) => GridView.builder(
+                                                controller: scrollController,
+                                                padding: isCompact ? const .fromLTRB(16.0, 0.0, 16.0, 16.0) : .zero,
+                                                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                                  crossAxisCount: 2,
+                                                  mainAxisSpacing: 2.0,
+                                                  crossAxisSpacing: 2.0,
+                                                  mainAxisExtent: 56.0,
+                                                ),
+                                                itemCount: KeySignature.values.length,
+                                                itemBuilder: (context, index) {
+                                                  final colorScheme = Theme.of(context).colorScheme;
+                                                  final textTheme = Theme.of(context).textTheme;
+
+                                                  final key = KeySignature.values[index];
+                                                  return Card.filled(
+                                                    margin: .zero,
+                                                    color: colorScheme.surfaceContainer,
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: WidgetUtilities.calculateBorderRadius(
+                                                        WidgetUtilities.calculateWidgetSide(
+                                                          index,
+                                                          KeySignature.values.length - 1,
+                                                          2,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    child: InkWell(
+                                                      onTap: () => context.pop(key),
+                                                      child: Padding(
+                                                        padding: const .all(16.0),
+                                                        child: Text(
+                                                          key.toLongString(),
+                                                          style: textTheme.bodyLarge?.copyWith(
+                                                            fontWeight: FontWeight.w500,
+                                                          ),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  );
+                                                },
+                                              );
+
+                                              final selectedKey = isCompact
+                                                  ? await showModalBottomSheet<KeySignature>(
+                                                      enableDrag: false,
+                                                      isScrollControlled: true,
+                                                      useSafeArea: true,
+                                                      context: context,
+                                                      builder: (context) => _CustomBottomSheet(
+                                                        title: 'Transpose to key',
+                                                        builder: (context, scrollController) =>
+                                                            content(context, scrollController),
+                                                      ),
+                                                    )
+                                                  : await showCustomDialog<KeySignature>(
+                                                      context,
+                                                      title: const Text('Transpose to key'),
+                                                      content: content(context, null),
+                                                      actions: [],
+                                                    );
+
+                                              if (selectedKey == null) return;
+
+                                              final error = widget.editorViewModel.transpose(ToKey(selectedKey));
+                                              _handleTransposeResult(_transposeSemitones * -1, error, isCompact);
+                                            },
+                                            icon: Symbols.format_letter_spacing_2_rounded,
+                                            label: 'To key',
+                                          ),
+                                          ToolbarIconButton(
+                                            onPressed: () async {
+                                              final transposeDirection = ValueNotifier(TransposeDirection.up);
+
+                                              Widget content(
+                                                BuildContext context,
+                                                ScrollController? scrollController,
+                                              ) => Column(
+                                                spacing: 16.0,
+                                                children: [
+                                                  Padding(
+                                                    padding: isCompact ? const .symmetric(horizontal: 16.0) : .zero,
+                                                    child: ListenableBuilder(
+                                                      listenable: transposeDirection,
+                                                      builder: (context, _) {
+                                                        return ConnectedButtonGroup<TransposeDirection>(
+                                                          buttons: [
+                                                            ButtonGroupItem(
+                                                              value: TransposeDirection.up,
+                                                              label: const Text('Up'),
+                                                              icon: const Icon(Symbols.arrow_upward_rounded),
+                                                            ),
+                                                            ButtonGroupItem(
+                                                              value: TransposeDirection.down,
+                                                              label: const Text('Down'),
+                                                              icon: const Icon(Symbols.arrow_downward_rounded),
+                                                            ),
+                                                          ],
+                                                          selected: {transposeDirection.value},
+                                                          onSelectionChanged: (selection) =>
+                                                              transposeDirection.value = selection.single,
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                  Expanded(
+                                                    child: ListView.separated(
+                                                      controller: scrollController,
+                                                      padding: isCompact
+                                                          ? const .fromLTRB(16.0, 0.0, 16.0, 16.0)
+                                                          : .zero,
+                                                      itemCount: Interval.values.length,
+                                                      separatorBuilder: (context, index) => SizedBox(height: 2.0),
+                                                      itemBuilder: (context, index) {
+                                                        final colorScheme = Theme.of(context).colorScheme;
+                                                        final textTheme = Theme.of(context).textTheme;
+
+                                                        final interval = Interval.values[index];
+                                                        return Card.filled(
+                                                          margin: .zero,
+                                                          color: colorScheme.surfaceContainer,
+                                                          shape: RoundedRectangleBorder(
+                                                            borderRadius: WidgetUtilities.calculateBorderRadius(
+                                                              WidgetUtilities.calculateWidgetSide(
+                                                                index,
+                                                                Interval.values.length,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                          child: InkWell(
+                                                            onTap: () => context.pop(interval),
+                                                            child: Padding(
+                                                              padding: const .all(16.0),
+                                                              child: Text(
+                                                                interval.toString(),
+                                                                style: textTheme.bodyLarge?.copyWith(
+                                                                  fontWeight: FontWeight.w500,
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      },
+                                                    ),
+                                                  ),
+                                                ],
+                                              );
+
+                                              final selectedKey = isCompact
+                                                  ? await showModalBottomSheet<Interval>(
+                                                      enableDrag: false,
+                                                      isScrollControlled: true,
+                                                      useSafeArea: true,
+                                                      context: context,
+                                                      builder: (context) => _CustomBottomSheet(
+                                                        title: 'Transpose to key',
+                                                        builder: (context, scrollController) =>
+                                                            content(context, scrollController),
+                                                      ),
+                                                    )
+                                                  : await showCustomDialog<Interval>(
+                                                      context,
+                                                      title: const Text('Transpose to key'),
+                                                      content: content(context, null),
+                                                      actions: [],
+                                                    );
+
+                                              if (selectedKey == null) return;
+
+                                              final error = widget.editorViewModel.transpose(
+                                                ByInterval(selectedKey, transposeDirection.value),
+                                              );
+                                              _handleTransposeResult(_transposeSemitones * -1, error, isCompact);
+                                            },
+                                            icon: Symbols.straighten_rounded,
+                                            label: 'By interval',
+                                          ),
+                                        ],
                                       ),
                                       if (!_isPreview) ...[
                                         ToolbarCollapsibleItem(
                                           onPressed: widget.viewModel.issuesCount > 0
                                               ? () => _selectNextIssue(isCompact)
                                               : null,
-                                          icon: Icons.spellcheck_rounded,
+                                          icon: Symbols.spellcheck_rounded,
                                           badgeCount: widget.viewModel.issuesCount > 0
                                               ? widget.viewModel.issuesCount
                                               : null,
@@ -535,7 +727,7 @@ class _WorkspaceScaffoldState extends State<WorkspaceScaffold> {
           builder: (context, controller, _) => IconButton(
             style: IconButton.styleFrom(minimumSize: const Size(0.0, 48.0)),
             onPressed: () => controller.isOpen ? controller.close() : controller.open(),
-            icon: const Icon(Icons.more_vert_rounded),
+            icon: const Icon(Symbols.more_vert_rounded),
           ),
         ),
         const SizedBox(width: 8.0),
